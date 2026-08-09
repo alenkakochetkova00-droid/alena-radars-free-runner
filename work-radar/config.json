@@ -1,0 +1,112 @@
+{
+  "daily_goal_rub": 10000,
+  "poll_interval_seconds": 180,
+  "usd_rate_rub": 80,
+  "database": "data/orders.db",
+  "log_level": "INFO",
+  "max_detail_fetch_per_cycle": 8,
+  "detail_fetch_sources": [],
+  "profile": {
+    "name": "Исполнительница",
+    "telegram": ""
+  },
+  "ignored_contact_handles": [
+    "Design_rabota_vacansy_bot",
+    "Design_reklama_bot",
+    "GetClient_TG_bot",
+    "no_scam_warn",
+    "digitaltenderbot",
+    "Zakaz_Design_Bot",
+    "All_Designers_bot",
+    "black_list_employer_bot",
+    "freelance_barmen"
+  ],
+  "filters": {
+    "require_public_contact": true,
+    "require_budget": true,
+    "max_age_minutes": 720,
+    "minimum_budget_to_market_ratio": 1.15,
+    "offer_share_of_budget": 0.85,
+    "minimum_effective_hourly_rub": 1800,
+    "minimum_score": 62,
+    "max_alerts_per_cycle": 5
+  },
+  "exclude_keywords": [
+    "криптоарбитраж",
+    "арбитраж криптовалют",
+    "выкуп товара",
+    "оставить отзыв",
+    "написание отзывов",
+    "оплата доступа",
+    "страховой взнос",
+    "пополнить баланс",
+    "ставки на спорт",
+    "казино",
+    "18+",
+    "тестовое задание без оплаты"
+    ,"размещение объявлений"
+    ,"идея зарабатывать"
+    ,"страховой депозит"
+    ,"вступительный взнос"
+  ],
+  "categories": {
+    "marketplace": {
+      "keywords": ["wildberries", "вайлдберриз", "wb", "ozon", "озон", "карточка товара", "карточки товара", "инфографика", "маркетплейс"],
+      "base_price_rub": 1000,
+      "per_unit_rub": 1000,
+      "base_hours": 0.6,
+      "per_unit_hours": 0.3,
+      "minimum_hours": 0.6
+    },
+    "banner": {
+      "keywords": ["баннер", "креатив", "обложка", "ресайз", "афиша", "визуал для соцсетей"],
+      "base_price_rub": 2500,
+      "per_unit_rub": 1200,
+      "base_hours": 0.8,
+      "per_unit_hours": 0.35,
+      "minimum_hours": 0.8
+    },
+    "logo_packaging": {
+      "keywords": ["логотип", "айдентика", "фирменный стиль", "упаковка", "этикетка", "полиграфия"],
+      "base_price_rub": 15000,
+      "per_unit_rub": 1500,
+      "base_hours": 5,
+      "per_unit_hours": 0.5,
+      "minimum_hours": 5
+    },
+    "tilda": {
+      "keywords": ["tilda", "тильда", "zero block", "лендинг", "landing page", "одностраничный сайт"],
+      "base_price_rub": 30000,
+      "per_unit_rub": 4000,
+      "base_hours": 8,
+      "per_unit_hours": 1,
+      "minimum_hours": 8
+    },
+    "website": {
+      "keywords": ["сайт", "wordpress", "вордпресс", "верстка", "веб-дизайн", "интернет-магазин"],
+      "base_price_rub": 55000,
+      "per_unit_rub": 5000,
+      "base_hours": 18,
+      "per_unit_hours": 1.5,
+      "minimum_hours": 18
+    },
+    "text": {
+      "keywords": ["написать пост", "написать текст", "копирайт", "статья", "описание товара", "контент"],
+      "base_price_rub": 1200,
+      "per_unit_rub": 1000,
+      "base_hours": 0.5,
+      "per_unit_hours": 0.35,
+      "minimum_hours": 0.5
+    }
+  },
+  "sources": [
+    {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "enabled": true},
+    {"kind": "telegram_public", "name": "GetClient", "channel": "GetClient", "enabled": true},
+    {"kind": "telegram_public", "name": "Digital Tender", "channel": "digitaltender", "enabled": true},
+    {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "enabled": true},
+    {"kind": "telegram_public", "name": "Заказы на дизайн", "channel": "zakaz_design", "enabled": true},
+    {"kind": "telegram_public", "name": "Freelance Choice", "channel": "freelancechoice", "enabled": true},
+    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/freelance/", "enabled": true},
+    {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "enabled": true}
+  ]
+}

@@ -1,0 +1,416 @@
+{
+  "_meta": {
+    "audience": "Гражданин РФ, загранпаспорт РФ",
+    "updated": "2026-08",
+    "warning": "Визовые правила меняются быстро. Перед покупкой билета обязательно сверься с официальной ссылкой из карточки страны и с консульским отделом.",
+    "regimes": {
+      "visa_free": "Виза не нужна",
+      "eta": "Электронное разрешение (ETA/K-ETA/SAE) — быстро, онлайн",
+      "e_visa": "Электронная виза — онлайн, без визита",
+      "voa": "Виза по прилёте",
+      "embassy": "Виза заранее в консульстве",
+      "hard": "Виза заранее, для граждан РФ сложно / долго / часто отказы"
+    }
+  },
+
+  "TR": {"name_ru": "Турция", "regime": "visa_free", "stay_days": 60, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран (действителен ≥120 дней с даты въезда)", "обратный билет"],
+    "long_stay": "Икамет (ВНЖ) — подаёшь внутри страны, договор аренды + страховка. Реально получить туристический на 6–12 мес, но в Стамбуле/Анталье часто отказы, проще в небольших городах.",
+    "payments": "Мир не работает. Наличные, либо турецкая карта (открывается по икамету/налоговому номеру).",
+    "link": "https://www.evisa.gov.tr/ru/", "risk": "low"},
+
+  "AE": {"name_ru": "ОАЭ", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет", "бронь жилья"],
+    "long_stay": "Резидентская виза через фриланс-лицензию или покупку недвижимости от $205k. Есть и «виза для удалёнщиков» (Virtual Working Programme) — от $611 + мед.страховка.",
+    "payments": "Мир не принимают. Работает UnionPay некоторых банков РФ, но лучше наличные + местная карта.",
+    "link": "https://u.ae/en/information-and-services/visa-and-emirates-id", "risk": "low"},
+
+  "TH": {"name_ru": "Таиланд", "regime": "visa_free", "stay_days": 60, "period_days": 180, "cost_rub": 0, "processing": "Нужна онлайн-форма TDAC за 3 дня до вылета (бесплатно)",
+    "docs": ["загран ≥6 мес", "обратный билет", "подтверждение жилья", "TDAC"],
+    "long_stay": "Продление +30 дней в иммиграционном офисе (1900 THB). Дальше — образовательная виза ED (языковая школа, ~40–60k THB/год) или DTV для удалёнщиков (5 лет, 10 000 THB, пребывание 180 дней за въезд).",
+    "payments": "Мир не работает. Снимай наличные с комиссией ~220 THB или вези доллары/евро на обмен (курс в обменниках лучше банковского).",
+    "link": "https://www.thaievisa.go.th/", "risk": "low"},
+
+  "VN": {"name_ru": "Вьетнам", "regime": "visa_free", "stay_days": 45, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет"],
+    "long_stay": "E-visa на 90 дней с мультивъездом — $25, оформляется онлайн за 3 рабочих дня. Для зимовки берут именно её.",
+    "payments": "Мир не работает. Наличные доллары меняются в ювелирных лавках по лучшему курсу.",
+    "link": "https://evisa.gov.vn/", "risk": "low"},
+
+  "GE": {"name_ru": "Грузия", "regime": "visa_free", "stay_days": 365, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран или внутренний паспорт РФ"],
+    "long_stay": "Год без визы — самый простой вариант для долгой жизни. ВНЖ по работе/учёбе/недвижимости от $100k.",
+    "payments": "Мир не работает с 2024. Открывается местная карта (Bank of Georgia, TBC) при наличии подтверждения адреса — но россиянам часто отказывают, закладывай наличные.",
+    "link": "https://geoconsul.gov.ge/ru", "risk": "low"},
+
+  "AM": {"name_ru": "Армения", "regime": "visa_free", "stay_days": 180, "period_days": 365, "cost_rub": 0, "processing": "—",
+    "docs": ["загран или внутренний паспорт РФ"],
+    "long_stay": "180 дней в году без визы. ВНЖ на год — через ИП или работу, ~105 000 драм, 2–3 месяца.",
+    "payments": "Мир работает в большинстве банкоматов и терминалов. Легко открыть местную карту (нужен только паспорт).",
+    "link": "https://www.mfa.am/ru/visa/", "risk": "low"},
+
+  "AZ": {"name_ru": "Азербайджан", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥3 мес"],
+    "long_stay": "Временный вид на жительство по работе/учёбе/инвестициям.",
+    "payments": "Мир не работает. Наличные, обмен без проблем.",
+    "link": "https://evisa.gov.az/ru/", "risk": "low",
+    "notes": "Со штампом Нагорного Карабаха въезд закроют."},
+
+  "KZ": {"name_ru": "Казахстан", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран или внутренний паспорт РФ"],
+    "long_stay": "90/180. Дальше — ВНЖ или выезд-въезд. Популярен как хаб для стыковок.",
+    "payments": "Мир частично (Народный банк принимает). Просто открыть местную карту по ИИН.",
+    "link": "https://www.gov.kz/", "risk": "low"},
+
+  "UZ": {"name_ru": "Узбекистан", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "90 дней без визы, затем продление.",
+    "payments": "Мир работает во многих банкоматах.", "link": "https://e-visa.gov.uz/", "risk": "low"},
+
+  "KG": {"name_ru": "Киргизия", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран или внутренний паспорт РФ"], "long_stay": "Регистрация после 30 дней, дальше ВНЖ.",
+    "payments": "Мир работает.", "link": "https://www.evisa.e-gov.kg/", "risk": "low"},
+
+  "RS": {"name_ru": "Сербия", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥90 дней", "мед.страховка", "бронь жилья", "деньги из расчёта €50/день"],
+    "long_stay": "Боравак (ВНЖ) — по аренде жилья, ИП или учёбе. Оформляется внутри страны, ~1–2 месяца, около €150. Один из самых доступных путей в Европу для граждан РФ.",
+    "payments": "Мир не работает. Наличные евро — лучший курс в частных обменниках (menjačnica).",
+    "link": "https://www.mfa.gov.rs/en/citizens/travel-serbia/visa-requirements-entering-serbia", "risk": "low",
+    "notes": "Белград — главный хаб для перелётов в Европу и Латинскую Америку."},
+
+  "ME": {"name_ru": "Черногория", "regime": "visa_free", "stay_days": 30, "period_days": 60, "cost_rub": 0, "processing": "—",
+    "docs": ["загран", "страховка", "подтверждение жилья"],
+    "long_stay": "Боравак по недвижимости или фирме, ~€200 и 1 месяц. С 2024 стало строже, но реально.",
+    "payments": "Мир не работает. Валюта — евро, наличные.",
+    "link": "https://www.mvp.gov.me/", "risk": "low"},
+
+  "RS_BA": {"name_ru": "Босния и Герцеговина", "regime": "visa_free", "stay_days": 30, "period_days": 60, "cost_rub": 0, "processing": "—",
+    "docs": ["загран", "страховка"], "long_stay": "ВНЖ через фирму.", "payments": "Мир не работает.",
+    "link": "http://www.mvp.gov.ba/", "risk": "low"},
+
+  "BA": {"name_ru": "Босния и Герцеговина", "regime": "visa_free", "stay_days": 30, "period_days": 60, "cost_rub": 0, "processing": "—",
+    "docs": ["загран", "страховка"], "long_stay": "ВНЖ через фирму.", "payments": "Мир не работает.",
+    "link": "http://www.mvp.gov.ba/", "risk": "low"},
+
+  "AL": {"name_ru": "Албания", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "90/180 без визы, затем ВНЖ по аренде.",
+    "payments": "Мир не работает.", "link": "https://punetejashtme.gov.al/en/", "risk": "low"},
+
+  "MK": {"name_ru": "Северная Македония", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "ВНЖ по учёбе/работе.", "payments": "Мир не работает.",
+    "link": "https://www.mfa.gov.mk/", "risk": "low"},
+
+  "MD": {"name_ru": "Молдова", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "ВНЖ по работе.", "payments": "Мир не работает.",
+    "link": "https://mfa.gov.md/", "risk": "medium", "notes": "Бывают отказы на границе, могут спросить цель поездки и деньги."},
+
+  "IL": {"name_ru": "Израиль", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет", "бронь жилья", "страховка"],
+    "long_stay": "Только по репатриации или рабочей визе.",
+    "payments": "Мир не работает.", "link": "https://www.gov.il/en/departments/israel_visas", "risk": "medium",
+    "notes": "Пограничный контроль жёсткий: держи под рукой бронь, обратный билет и внятную легенду поездки."},
+
+  "EG": {"name_ru": "Египет", "regime": "voa", "stay_days": 30, "period_days": null, "cost_rub": 2400, "processing": "по прилёте, 5 минут ($25)",
+    "docs": ["загран ≥6 мес", "$25 наличными"],
+    "long_stay": "Продление в паспортном офисе Хургады/Каира. Многие живут по цепочке продлений.",
+    "payments": "Мир не работает. Доллары наличными — золото.",
+    "link": "https://visa2egypt.gov.eg/", "risk": "low",
+    "notes": "Синай (Шарм) — до 15 дней бесплатно без визы, если не выезжаешь за пределы полуострова."},
+
+  "MA": {"name_ru": "Марокко", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет", "бронь"],
+    "long_stay": "Carte de séjour по аренде/работе.", "payments": "Мир не работает. Дирхам не вывозится, меняй на месте.",
+    "link": "https://www.consulat.ma/", "risk": "low"},
+
+  "TN": {"name_ru": "Тунис", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥3 мес", "ваучер отеля"], "long_stay": "ВНЖ по работе.",
+    "payments": "Мир не работает.", "link": "https://www.diplomatie.gov.tn/", "risk": "low"},
+
+  "ZA": {"name_ru": "ЮАР", "regime": "visa_free", "stay_days": 90, "period_days": 365, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥30 дней сверх поездки, 2 чистые страницы", "обратный билет"],
+    "long_stay": "Есть Remote Work Visa (с 2024) для удалёнщиков с доходом от ~1 млн рэндов/год.",
+    "payments": "Мир не работает. Карты нужны везде, вези наличные доллары на обмен.",
+    "link": "http://www.dha.gov.za/", "risk": "low"},
+
+  "TZ": {"name_ru": "Танзания / Занзибар", "regime": "e_visa", "stay_days": 90, "period_days": null, "cost_rub": 4800, "processing": "e-visa онлайн, 5–10 дней ($50)",
+    "docs": ["загран ≥6 мес", "жёлтая лихорадка — если летишь через страну риска", "фото"],
+    "long_stay": "Продление на месте.", "payments": "Мир не работает. Доллары от 2009 года выпуска и новее.",
+    "link": "https://visa.immigration.go.tz/", "risk": "low"},
+
+  "KE": {"name_ru": "Кения", "regime": "eta", "stay_days": 90, "period_days": null, "cost_rub": 3300, "processing": "eTA онлайн, 3 дня ($34)",
+    "docs": ["загран ≥6 мес", "бронь жилья", "обратный билет"],
+    "long_stay": "Продление до 6 мес.", "payments": "Мир не работает. M-Pesa — местный must have.",
+    "link": "https://www.etakenya.go.ke/", "risk": "low"},
+
+  "ET": {"name_ru": "Эфиопия", "regime": "e_visa", "stay_days": 30, "period_days": null, "cost_rub": 8000, "processing": "онлайн, 3 дня ($82)",
+    "docs": ["загран ≥6 мес"], "long_stay": "—", "payments": "Мир не работает.",
+    "link": "https://www.evisa.gov.et/", "risk": "medium", "notes": "Аддис-Абеба — удобный хаб Ethiopian Airlines в Африку и Бразилию."},
+
+  "SC": {"name_ru": "Сейшелы", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 1000, "processing": "Travel Authorisation онлайн, €10",
+    "docs": ["загран", "бронь жилья", "обратный билет", "страховка"],
+    "long_stay": "Продление до 1 года.", "payments": "Мир не работает.",
+    "link": "https://seychelles.govtas.com/", "risk": "low"},
+
+  "MU": {"name_ru": "Маврикий", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "бронь", "обратный билет", "$100/день"],
+    "long_stay": "Premium Travel Visa на год для удалёнщиков — бесплатно.",
+    "payments": "Мир не работает.", "link": "https://passport.govmu.org/", "risk": "low"},
+
+  "MV": {"name_ru": "Мальдивы", "regime": "voa", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "штамп по прилёте, бесплатно",
+    "docs": ["загран ≥1 мес", "бронь жилья", "обратный билет", "Traveller Declaration за 96ч"],
+    "long_stay": "Продление до 90 дней.", "payments": "Мир не работает.",
+    "link": "https://imuga.immigration.gov.mv/", "risk": "low"},
+
+  "LK": {"name_ru": "Шри-Ланка", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "с 2024 бесплатный въезд для РФ, но проверь актуальность — режим менялся дважды",
+    "docs": ["загран ≥6 мес", "обратный билет"],
+    "long_stay": "Продление до 6 мес в Коломбо.", "payments": "Мир не работает.",
+    "link": "https://www.eta.gov.lk/", "risk": "medium"},
+
+  "IN": {"name_ru": "Индия", "regime": "e_visa", "stay_days": 30, "period_days": null, "cost_rub": 2600, "processing": "e-Tourist Visa онлайн, 3–5 дней ($25 за 30 дней / $40 за год)",
+    "docs": ["загран ≥6 мес", "фото на белом фоне", "скан первой страницы"],
+    "long_stay": "Годовая мультивиза — $40, до 90 дней за въезд. Идеально для Гоа.",
+    "payments": "Мир не работает. UPI недоступен без индийского номера.",
+    "link": "https://indianvisaonline.gov.in/evisa/", "risk": "low"},
+
+  "NP": {"name_ru": "Непал", "regime": "voa", "stay_days": 90, "period_days": null, "cost_rub": 5000, "processing": "по прилёте в Катманду ($50 за 30 дней / $125 за 90)",
+    "docs": ["загран ≥6 мес", "фото", "наличные доллары"],
+    "long_stay": "До 150 дней в календарный год.", "payments": "Мир не работает.",
+    "link": "https://nepaliport.immigration.gov.np/", "risk": "low"},
+
+  "ID": {"name_ru": "Индонезия (Бали)", "regime": "voa", "stay_days": 30, "period_days": null, "cost_rub": 5300, "processing": "e-VOA онлайн заранее или по прилёте (500 000 IDR ≈ $33)",
+    "docs": ["загран ≥6 мес", "обратный билет", "All Indonesia декларация"],
+    "long_stay": "e-VOA продлевается +30 дней онлайн. Дальше — B211A (60+60+60 дней) или KITAS для удалёнщиков (E33G, 1 год, нужен доход от $60k/год).",
+    "payments": "Мир не работает. Снимай в банкоматах BCA/Mandiri, лимит 2.5–3 млн IDR.",
+    "link": "https://evisa.imigrasi.go.id/", "risk": "low"},
+
+  "MY": {"name_ru": "Малайзия", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "нужна MDAC — бесплатная онлайн-карта прибытия за 3 дня",
+    "docs": ["загран ≥6 мес", "обратный билет", "MDAC"],
+    "long_stay": "DE Rantau Nomad Pass — 1 год для айтишников/удалёнщиков, доход от $24k/год.",
+    "payments": "Мир не работает.", "link": "https://imigresen-online.imi.gov.my/mdac/main", "risk": "low"},
+
+  "SG": {"name_ru": "Сингапур", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "SG Arrival Card онлайн, бесплатно",
+    "docs": ["загран ≥6 мес", "обратный билет", "подтверждение средств"],
+    "long_stay": "Только по рабочему пассу.", "payments": "Мир не работает.",
+    "link": "https://eservices.ica.gov.sg/sgarrivalcard/", "risk": "low"},
+
+  "PH": {"name_ru": "Филиппины", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "eTravel регистрация онлайн, бесплатно",
+    "docs": ["загран ≥6 мес", "обратный билет"],
+    "long_stay": "Продлевается в Bureau of Immigration до 36 месяцев частями. Один из самых гибких вариантов для зимовки.",
+    "payments": "Мир не работает.", "link": "https://etravel.gov.ph/", "risk": "low"},
+
+  "KH": {"name_ru": "Камбоджа", "regime": "e_visa", "stay_days": 30, "period_days": null, "cost_rub": 3600, "processing": "e-visa онлайн 3 дня ($36) или по прилёте ($30)",
+    "docs": ["загран ≥6 мес", "фото"],
+    "long_stay": "Бизнес-виза EB продлевается на год без обязательств — самый простой ВНЖ-заменитель в ЮВА.",
+    "payments": "Мир не работает. В ходу доллары США наравне с риелем.",
+    "link": "https://www.evisa.gov.kh/", "risk": "low"},
+
+  "LA": {"name_ru": "Лаос", "regime": "voa", "stay_days": 30, "period_days": null, "cost_rub": 3500, "processing": "по прилёте $30–35 или e-visa",
+    "docs": ["загран ≥6 мес", "фото"], "long_stay": "Продление на месте.",
+    "payments": "Мир не работает.", "link": "https://laoevisa.gov.la/", "risk": "low"},
+
+  "CN": {"name_ru": "Китай", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "безвизовый режим для граждан РФ (введён 15.09.2025) — обязательно проверь, продлён ли он",
+    "docs": ["загран ≥6 мес", "обратный билет", "бронь жилья"],
+    "long_stay": "Свыше 30 дней — обычная туристическая виза L в консульстве, ~3000 руб, 4–7 дней.",
+    "payments": "Мир не работает. Обязательно привяжи карту UnionPay или заведи Alipay/WeChat Pay — без них в Китае тяжело, наличные принимают неохотно.",
+    "link": "https://ru.china-embassy.gov.cn/", "risk": "medium",
+    "notes": "Безвизовый режим экспериментальный — перед покупкой билета сверься с сайтом посольства."},
+
+  "HK": {"name_ru": "Гонконг", "regime": "visa_free", "stay_days": 14, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥1 мес сверх поездки"], "long_stay": "—",
+    "payments": "Мир не работает. Octopus card для транспорта.",
+    "link": "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html", "risk": "low"},
+
+  "MO": {"name_ru": "Макао", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "—", "payments": "Мир не работает.",
+    "link": "https://www.fsm.gov.mo/psp/", "risk": "low"},
+
+  "MN": {"name_ru": "Монголия", "regime": "visa_free", "stay_days": 30, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес"], "long_stay": "—", "payments": "Мир не работает.",
+    "link": "https://www.mfa.gov.mn/", "risk": "low"},
+
+  "KR": {"name_ru": "Южная Корея", "regime": "eta", "stay_days": 60, "period_days": null, "cost_rub": 1000, "processing": "K-ETA онлайн, до 72 часов (10 000 KRW), плюс Q-CODE",
+    "docs": ["загран ≥6 мес", "K-ETA", "бронь", "обратный билет"],
+    "long_stay": "Только по рабочей/учебной визе.",
+    "payments": "Мир не работает.", "link": "https://www.k-eta.go.kr/", "risk": "medium",
+    "notes": "Для граждан РФ K-ETA одобряют не всегда; при отказе нужна обычная виза. Пограничники задают вопросы — держи бронь и обратный билет."},
+
+  "JP": {"name_ru": "Япония", "regime": "e_visa", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "e-visa через аккредитованное агентство, 5–10 рабочих дней; консульский сбор для граждан РФ отменён",
+    "docs": ["загран", "анкета", "программа пребывания по дням", "выписка со счёта", "справка с работы", "бронь жилья"],
+    "long_stay": "Только по рабочей/учебной визе.",
+    "payments": "Мир не работает. Япония всё ещё во многом кэшевая — вези наличные иены.",
+    "link": "https://www.evisa.mofa.go.jp/", "risk": "medium",
+    "notes": "Виза бесплатная, но нужна детальная программа поездки по дням — бот её сгенерирует."},
+
+  "AM_IR": {"name_ru": "Иран", "regime": "visa_free", "stay_days": 15, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес"], "long_stay": "—", "payments": "Мир не работает, международные карты не работают вообще — только наличные или туристическая карта Mah Card.",
+    "link": "https://evisatraveller.mfa.ir/", "risk": "high"},
+
+  "IR": {"name_ru": "Иран", "regime": "visa_free", "stay_days": 15, "period_days": null, "cost_rub": 0, "processing": "безвизовый групповой/индивидуальный режим — проверь актуальность",
+    "docs": ["загран ≥6 мес", "страховка иранского образца"], "long_stay": "—",
+    "payments": "Международные карты НЕ работают. Только наличные евро/доллары или туристическая карта.",
+    "link": "https://evisatraveller.mfa.ir/", "risk": "high"},
+
+  "QA": {"name_ru": "Катар", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "бронь жилья", "обратный билет"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.visitqatar.com/", "risk": "low",
+    "notes": "Доха — удобный хаб. Если стыковка >8 часов, Qatar Airways даёт бесплатный отель."},
+
+  "BH": {"name_ru": "Бахрейн", "regime": "e_visa", "stay_days": 14, "period_days": null, "cost_rub": 3000, "processing": "онлайн, 3–5 дней",
+    "docs": ["загран ≥6 мес", "бронь", "обратный билет"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.evisa.gov.bh/", "risk": "low"},
+
+  "OM": {"name_ru": "Оман", "regime": "e_visa", "stay_days": 30, "period_days": null, "cost_rub": 2000, "processing": "онлайн, 1–3 дня (20 OMR)",
+    "docs": ["загран ≥6 мес", "страховка", "бронь"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://evisa.rop.gov.om/", "risk": "low"},
+
+  "SA": {"name_ru": "Саудовская Аравия", "regime": "e_visa", "stay_days": 90, "period_days": 365, "cost_rub": 12000, "processing": "онлайн, 1–3 дня (~535 SAR со страховкой)",
+    "docs": ["загран ≥6 мес", "фото"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://visa.visitsaudi.com/", "risk": "low"},
+
+  "JO": {"name_ru": "Иордания", "regime": "voa", "stay_days": 30, "period_days": null, "cost_rub": 5600, "processing": "по прилёте, 40 JOD; бесплатно по Jordan Pass",
+    "docs": ["загран ≥6 мес"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.jordanpass.jo/", "risk": "low",
+    "notes": "Jordan Pass (70–80 JOD) включает визу + Петру — почти всегда выгоднее, чем по отдельности."},
+
+  "TR_CY": {"name_ru": "Северный Кипр", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран"], "long_stay": "ВНЖ по аренде.", "payments": "Мир не работает.",
+    "link": "https://mfa.gov.ct.tr/", "risk": "low"},
+
+  "AR": {"name_ru": "Аргентина", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет", "бронь"],
+    "long_stay": "Продление +90 дней в Migraciones. Есть виза цифрового кочевника на 180 дней. Рождение ребёнка даёт родителям путь к гражданству — популярный маршрут у россиян.",
+    "payments": "Мир не работает. Вези доллары наличными — курс «blue» заметно выгоднее официального.",
+    "link": "https://www.argentina.gob.ar/interior/migraciones", "risk": "low"},
+
+  "BR": {"name_ru": "Бразилия", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет", "подтверждение средств"],
+    "long_stay": "Продление +90 дней в федеральной полиции. Виза цифрового кочевника на год, доход от $1500/мес.",
+    "payments": "Мир не работает.", "link": "https://www.gov.br/mre/", "risk": "low"},
+
+  "CL": {"name_ru": "Чили", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет"], "long_stay": "ВНЖ по работе.",
+    "payments": "Мир не работает.", "link": "https://serviciomigraciones.cl/", "risk": "low"},
+
+  "PE": {"name_ru": "Перу", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "обратный билет"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.gob.pe/migraciones", "risk": "low"},
+
+  "CO": {"name_ru": "Колумбия", "regime": "visa_free", "stay_days": 90, "period_days": 180, "cost_rub": 0, "processing": "нужна Check-Mig онлайн-форма, бесплатно",
+    "docs": ["загран ≥6 мес", "обратный билет", "страховка"],
+    "long_stay": "Виза цифрового кочевника (V Nomadas Digitales) на 2 года, доход от ~$750/мес — одна из самых доступных в мире.",
+    "payments": "Мир не работает.", "link": "https://www.cancilleria.gov.co/", "risk": "medium"},
+
+  "EC": {"name_ru": "Эквадор", "regime": "visa_free", "stay_days": 90, "period_days": 365, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "страховка на весь срок", "обратный билет"],
+    "long_stay": "Виза Rentista/номад.", "payments": "Мир не работает. Валюта — доллар США.",
+    "link": "https://www.cancilleria.gob.ec/", "risk": "low"},
+
+  "UY": {"name_ru": "Уругвай", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес"], "long_stay": "ВНЖ относительно доступен.",
+    "payments": "Мир не работает.", "link": "https://www.gub.uy/", "risk": "low"},
+
+  "BO": {"name_ru": "Боливия", "regime": "visa_free", "stay_days": 90, "period_days": 365, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес", "жёлтая лихорадка"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.cancilleria.gob.bo/", "risk": "medium"},
+
+  "CU": {"name_ru": "Куба", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "нужна D'Viajeros онлайн-форма за 48ч, бесплатно",
+    "docs": ["загран ≥6 мес", "мед.страховка (проверяют)", "обратный билет"],
+    "long_stay": "Продление на 90 дней.",
+    "payments": "Мир РАБОТАЕТ на Кубе (карты МИР принимают в отелях и банках) — редкий случай. Но лучше дублировать наличными евро.",
+    "link": "https://www.dviajeros.mitrans.gob.cu/", "risk": "low"},
+
+  "DO": {"name_ru": "Доминикана", "regime": "visa_free", "stay_days": 30, "period_days": null, "cost_rub": 0, "processing": "e-Ticket онлайн, бесплатно; турналог включён в билет",
+    "docs": ["загран ≥6 мес", "e-Ticket"], "long_stay": "Продление платное при выезде.",
+    "payments": "Мир не работает.", "link": "https://eticket.migracion.gob.do/", "risk": "low"},
+
+  "MX": {"name_ru": "Мексика", "regime": "eta", "stay_days": 180, "period_days": null, "cost_rub": 0, "processing": "SAE — бесплатное электронное разрешение, до 3 дней; или без него, если есть действующая виза США/Шенген/Канады/Японии/UK",
+    "docs": ["загран ≥6 мес", "SAE", "бронь жилья", "обратный билет", "подтверждение средств"],
+    "long_stay": "Штамп до 180 дней даёт офицер на границе — не гарантированно. Есть временный резидент по доходу.",
+    "payments": "Мир не работает.", "link": "https://www.inm.gob.mx/sae/publico/en/solicitud.html", "risk": "medium",
+    "notes": "SAE выдают только при вылете прямым рейсом; на пересадках проверяют внимательно. Офицер может дать меньше 180 дней."},
+
+  "PA": {"name_ru": "Панама", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥3 мес", "обратный билет", "$500 на счету"], "long_stay": "Виза Friendly Nations.",
+    "payments": "Мир не работает. Валюта — доллар.", "link": "https://www.migracion.gob.pa/", "risk": "low"},
+
+  "CR": {"name_ru": "Коста-Рика", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥1 день сверх поездки", "обратный билет", "$100/мес"],
+    "long_stay": "Виза номада на 1 год, доход от $3000/мес.",
+    "payments": "Мир не работает.", "link": "https://migracion.go.cr/", "risk": "low"},
+
+  "NI": {"name_ru": "Никарагуа", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 1000, "processing": "туристическая карта $10 на границе",
+    "docs": ["загран ≥6 мес"], "long_stay": "—", "payments": "Мир не работает.",
+    "link": "https://www.migob.gob.ni/migracion/", "risk": "medium"},
+
+  "VE": {"name_ru": "Венесуэла", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["загран ≥6 мес"], "long_stay": "—",
+    "payments": "Мир работает в некоторых банках.", "link": "https://www.mppre.gob.ve/", "risk": "high"},
+
+  "US": {"name_ru": "США", "regime": "hard", "stay_days": 180, "period_days": null, "cost_rub": 18500, "processing": "виза B1/B2, $185 + собеседование. В России консульство не выдаёт туристические визы — запись только в третьих странах (Астана, Варшава, Белград, Абу-Даби). Ожидание записи 6–18 месяцев.",
+    "docs": ["загран", "DS-160", "фото", "подтверждение связей с Россией", "выписка со счёта"],
+    "long_stay": "По визе B2 офицер обычно ставит до 6 месяцев.",
+    "payments": "Мир не работает.", "link": "https://travel.state.gov/", "risk": "very_high",
+    "notes": "Без уже открытой визы билет со скидкой смысла не имеет — предупрежу в карточке."},
+
+  "GB": {"name_ru": "Великобритания", "regime": "hard", "stay_days": 180, "period_days": null, "cost_rub": 13000, "processing": "Standard Visitor visa £127. Визовый центр в Москве не работает — биометрию сдают в третьих странах. 3–8 недель.",
+    "docs": ["загран", "анкета", "выписки за 6 мес", "справка с работы", "бронь"],
+    "long_stay": "—", "payments": "Мир не работает.",
+    "link": "https://www.gov.uk/standard-visitor-visa", "risk": "very_high"},
+
+  "CA": {"name_ru": "Канада", "regime": "hard", "stay_days": 180, "period_days": null, "cost_rub": 7500, "processing": "Visitor visa CAD 100 + биометрия CAD 85, в третьей стране. 6–12 месяцев.",
+    "docs": ["загран", "анкета", "финансы", "связи с родиной"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.canada.ca/en/immigration-refugees-citizenship.html", "risk": "very_high"},
+
+  "AU": {"name_ru": "Австралия", "regime": "hard", "stay_days": 90, "period_days": null, "cost_rub": 13000, "processing": "Visitor visa 600, AUD 195, онлайн, 1–3 месяца",
+    "docs": ["загран", "финансы", "маршрут"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://immi.homeaffairs.gov.au/", "risk": "high"},
+
+  "NZ": {"name_ru": "Новая Зеландия", "regime": "hard", "stay_days": 90, "period_days": null, "cost_rub": 14000, "processing": "Visitor visa NZD 211, 1–2 месяца",
+    "docs": ["загран", "финансы", "маршрут", "медсправка при долгом сроке"], "long_stay": "—",
+    "payments": "Мир не работает.", "link": "https://www.immigration.govt.nz/", "risk": "high"},
+
+  "SCHENGEN": {"name_ru": "Шенген", "regime": "hard", "stay_days": 90, "period_days": 180, "cost_rub": 12000, "processing": "Виза C: сбор €90 + сервисный сбор визового центра €30–35 + запись. Реальный срок с учётом поиска слота — 1–3 месяца.",
+    "docs": ["загран (выдан ≤10 лет назад, действителен ≥3 мес после выезда)", "анкета", "фото 3.5×4.5", "мед.страховка на €30 000", "брони отелей на весь маршрут", "билеты туда-обратно", "справка с работы", "выписка со счёта (~€70–100/день)"],
+    "long_stay": "Национальная виза D (учёба, работа, ВНЖ) — отдельная процедура в консульстве конкретной страны.",
+    "payments": "Мир и российские Visa/Mastercard не работают. Наличные евро + карта банка третьей страны.",
+    "link": "https://www.schengenvisainfo.com/",
+    "risk": "high",
+    "notes": "Наиболее доступны для граждан РФ: Венгрия, Италия, Испания, Греция, Франция, Словения. Правило первого въезда: летишь в страну, выдавшую визу. Записываться нужно ЗАРАНЕЕ — слоты разбирают за недели."},
+
+  "IS": {"name_ru": "Исландия", "regime": "hard", "inherit": "SCHENGEN"},
+  "FR": {"name_ru": "Франция", "regime": "hard", "inherit": "SCHENGEN"},
+  "IT": {"name_ru": "Италия", "regime": "hard", "inherit": "SCHENGEN"},
+  "ES": {"name_ru": "Испания", "regime": "hard", "inherit": "SCHENGEN"},
+  "DE": {"name_ru": "Германия", "regime": "hard", "inherit": "SCHENGEN"},
+  "PT": {"name_ru": "Португалия", "regime": "hard", "inherit": "SCHENGEN"},
+  "GR": {"name_ru": "Греция", "regime": "hard", "inherit": "SCHENGEN"},
+  "NL": {"name_ru": "Нидерланды", "regime": "hard", "inherit": "SCHENGEN"},
+  "AT": {"name_ru": "Австрия", "regime": "hard", "inherit": "SCHENGEN"},
+  "CZ": {"name_ru": "Чехия", "regime": "hard", "inherit": "SCHENGEN"},
+  "PL": {"name_ru": "Польша", "regime": "hard", "inherit": "SCHENGEN"},
+  "HU": {"name_ru": "Венгрия", "regime": "hard", "inherit": "SCHENGEN"},
+  "HR": {"name_ru": "Хорватия", "regime": "hard", "inherit": "SCHENGEN"},
+  "SI": {"name_ru": "Словения", "regime": "hard", "inherit": "SCHENGEN"},
+  "SK": {"name_ru": "Словакия", "regime": "hard", "inherit": "SCHENGEN"},
+  "FI": {"name_ru": "Финляндия", "regime": "hard", "inherit": "SCHENGEN"},
+  "SE": {"name_ru": "Швеция", "regime": "hard", "inherit": "SCHENGEN"},
+  "NO": {"name_ru": "Норвегия", "regime": "hard", "inherit": "SCHENGEN"},
+  "DK": {"name_ru": "Дания", "regime": "hard", "inherit": "SCHENGEN"},
+  "BE": {"name_ru": "Бельгия", "regime": "hard", "inherit": "SCHENGEN"},
+  "CH": {"name_ru": "Швейцария", "regime": "hard", "inherit": "SCHENGEN"},
+  "EE": {"name_ru": "Эстония", "regime": "hard", "inherit": "SCHENGEN"},
+  "LV": {"name_ru": "Латвия", "regime": "hard", "inherit": "SCHENGEN"},
+  "LT": {"name_ru": "Литва", "regime": "hard", "inherit": "SCHENGEN"},
+  "MT": {"name_ru": "Мальта", "regime": "hard", "inherit": "SCHENGEN"},
+  "CY": {"name_ru": "Кипр", "regime": "hard", "inherit": "SCHENGEN",
+    "notes": "Кипр не в Шенгене, но нужна отдельная виза; при наличии двукратного шенгена въезд разрешён."},
+  "RO": {"name_ru": "Румыния", "regime": "hard", "inherit": "SCHENGEN"},
+  "BG": {"name_ru": "Болгария", "regime": "hard", "inherit": "SCHENGEN"},
+
+  "BY": {"name_ru": "Беларусь", "regime": "visa_free", "stay_days": 3650, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["внутренний паспорт РФ"], "long_stay": "Свободно.",
+    "payments": "Мир работает полностью.", "link": "https://mfa.gov.by/", "risk": "low"},
+
+  "AB": {"name_ru": "Абхазия", "regime": "visa_free", "stay_days": 90, "period_days": null, "cost_rub": 0, "processing": "—",
+    "docs": ["внутренний паспорт РФ"], "long_stay": "—", "payments": "Мир работает.",
+    "link": "https://mfaapsny.org/", "risk": "low"}
+}

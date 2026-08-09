@@ -1,0 +1,23 @@
+name: Monthly maintenance
+
+on:
+  schedule:
+    - cron: "29 11 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keep-schedules-active:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record monthly maintenance
+        run: |
+          date -u +%Y-%m-%d > .github/last-maintenance.txt
+          git config user.name "radar-maintenance"
+          git config user.email "actions@users.noreply.github.com"
+          git add .github/last-maintenance.txt
+          git commit -m "Monthly workflow maintenance" || exit 0
+          git push

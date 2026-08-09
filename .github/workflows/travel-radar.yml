@@ -1,0 +1,54 @@
+name: Travel radar — every 45 minutes
+
+on:
+  schedule:
+    - cron: "7 0-21/3 * * *"
+    - cron: "52 0-21/3 * * *"
+    - cron: "37 1-22/3 * * *"
+    - cron: "22 2-23/3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: travel-radar
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: travel-radar/requirements.txt
+      - name: Install travel dependencies
+        run: pip install -r travel-radar/requirements.txt
+      - uses: actions/cache/restore@v4
+        with:
+          path: state/dealradar.sqlite3*
+          key: travel-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            travel-state-
+      - name: Scan fares and process commands
+        working-directory: travel-radar
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TRAVEL_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TRAVEL_TELEGRAM_CHAT_ID }}
+          TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+          TRAVELPAYOUTS_MARKER: ${{ secrets.TRAVELPAYOUTS_MARKER }}
+          DEAL_RADAR_DB_PATH: ${{ github.workspace }}/state/dealradar.sqlite3
+          DEAL_RADAR_LOG_DIR: ${{ runner.temp }}/deal-radar-logs
+        run: |
+          mkdir -p "${{ github.workspace }}/state"
+          python -m radar.main --scheduled
+      - name: Save private state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state/dealradar.sqlite3*
+          key: travel-state-${{ github.run_id }}-${{ github.run_attempt }}

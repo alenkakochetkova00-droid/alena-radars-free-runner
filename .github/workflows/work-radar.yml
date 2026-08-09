@@ -1,0 +1,45 @@
+name: Work radar — every 5 minutes
+
+on:
+  schedule:
+    - cron: "3-58/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: work-radar
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: state/work-orders.db*
+          key: work-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            work-state-
+      - name: Scan fresh orders and process commands
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.WORK_TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.WORK_TELEGRAM_CHAT_ID }}
+          WORK_PROFILE_NAME: ${{ secrets.WORK_PROFILE_NAME }}
+          WORK_PROFILE_TELEGRAM: ${{ secrets.WORK_PROFILE_TELEGRAM }}
+          ORDER_RADAR_DB_PATH: ${{ github.workspace }}/state/work-orders.db
+        run: |
+          mkdir -p state
+          python work-radar/order_radar.py --scheduled
+      - name: Save private state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state/work-orders.db*
+          key: work-state-${{ github.run_id }}-${{ github.run_attempt }}

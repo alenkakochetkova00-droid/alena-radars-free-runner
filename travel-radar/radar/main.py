@@ -75,6 +75,12 @@ async def amain(args) -> int:
                         config.get("telegram.parse_mode", "HTML")) as tg:
         scanner = Scanner(config, storage, tg)
 
+        if args.commands_only:
+            bot = Bot(config, storage, tg, scanner)
+            handled = await bot.poll_once(timeout=0)
+            log.info("Быстрая проверка Telegram: команд %s", handled)
+            return 0
+
         if args.scheduled:
             bot = Bot(config, storage, tg, scanner)
             handled = await bot.poll_once(timeout=0)
@@ -139,6 +145,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Deal Radar — охота за дешёвыми билетами")
     parser.add_argument("--once", action="store_true", help="один скан и выход")
     parser.add_argument("--scheduled", action="store_true", help="команды и один плановый скан")
+    parser.add_argument("--commands-only", action="store_true", help="только быстрые команды Telegram")
     parser.add_argument("--test", action="store_true", help="проверить связь с Telegram")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()

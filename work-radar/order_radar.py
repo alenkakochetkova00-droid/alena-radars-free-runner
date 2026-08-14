@@ -594,8 +594,16 @@ def format_alert(listing: Listing, assessment: matching.Assessment,
     money = lambda value: f"{value:,}".replace(",", " ")
     budget = f"{money(assessment.budget_rub)} ₽" if assessment.budget_rub else "не указан"
     if assessment.contact_mode == "direct" and listing.contacts:
-        contact_line = ("Писать напрямую, отклик бесплатный: <b>"
-                        + " · ".join(safe(c) for c in listing.contacts[:3]) + "</b>")
+        # Ссылка открывает выбор чата с уже набранным письмом — остаётся нажать «отправить».
+        prefilled = urllib.parse.quote(assessment.reply)
+        handles = " · ".join(
+            f'<a href="https://t.me/{safe(c.lstrip("@"))}">{safe(c)}</a>' if c.startswith("@") else safe(c)
+            for c in listing.contacts[:3]
+        )
+        contact_line = (
+            f"{handles}\n"
+            f'<a href="https://t.me/share/url?url={prefilled}">📤 Открыть письмо готовым к отправке</a>'
+        )
     elif quota_left is not None:
         contact_line = (f"Отклик через площадку · осталось бесплатных в этом месяце: "
                         f"<b>{quota_left}</b>")

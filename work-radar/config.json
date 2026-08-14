@@ -25,8 +25,17 @@
     "minimum_offer_rub": 1000,
     "minimum_hourly_rub": 2000,
     "minimum_score": 55,
-    "max_alerts_per_cycle": 6
+    "max_alerts_per_cycle": 6,
+    "only_free_response": false
   },
+
+  "safety_note": [
+    "Данные карты нужны только для получения денег: номер карты и всё. Никаких сроков действия, CVC и кодов из СМС.",
+    "Не открывайте ссылки «для перевода оплаты», «на еду», «для верификации» — оплату присылают переводом, без форм.",
+    "Не входите по ссылке заказчика в Telegram, банк или Госуслуги: так угоняют аккаунт.",
+    "Берите предоплату 30–50% на задачах дороже 3 000 ₽.",
+    "Если торопят и давят срочностью до обсуждения задачи — почти всегда мошенник."
+  ],
 
   "posting_rules": {
     "require_task_marker": true,
@@ -99,7 +108,13 @@
     "\\b18\\+|интим|эскорт",
     "дроп\\w*|обнал|подставн\\w+ лиц",
     "тестовое задание без оплаты|бесплатное тестовое",
-    "финансов\\w+ пирамид|быстрый заработок без вложений"
+    "финансов\\w+ пирамид|быстрый заработок без вложений",
+    "данн\\w+ карты|реквизит\\w+ карты|привяз\\w+ карт|верификац\\w+ карт|подтвердить карту",
+    "\\bcvc\\b|\\bcvv\\b|срок действия карты|код из смс|смс[- ]?код",
+    "перейдите по ссылке|пройдите по ссылке|заполните форму по ссылке",
+    "оплата через нашу ссылку|ссылк\\w+ для оплаты|ссылк\\w+ на оплату",
+    "войдите через госуслуги|авторизуйтесь по ссылке",
+    "нужен ваш номер телефона для доступа|пришлите код подтверждения"
   ],
 
   "not_for_us": [
@@ -121,8 +136,17 @@
     "модерац\\w+ чата|модератор чата|администратор чата",
     "рекламн\\w+ кабинет|настроить таргет|закупк\\w+ рекламы|залив трафика",
     "стрим|прямой эфир|вебинар вести",
-    "разработать игру|игров\\w+ движок|платформер|геймдизайн",
-    "мобильн\\w+ приложени\\w* (?:с нуля|под ключ)|приложени\\w* для (?:ios|android)"
+    "разработать игру|игров\\w+ движок|платформер|геймдизайн|карт\\w+ города|\\bgta\\b|роблокс|roblox",
+    "мобильн\\w+ приложени\\w* (?:с нуля|под ключ)|приложени\\w* для (?:ios|android)",
+    "актер|актрис|лицо в кадр|\\bв кадре\\b|сняться|сниматься|модель для|внешность",
+    "ведущ\\w+ мероприят|аниматор|голос\\w* за кадром|начитк",
+    "(?:сайт|платформ|систем|приложени|магазин|crm|erp)\\w* под ключ",
+    "разработ\\w+ (?:платформ|систем|crm|erp)|полноценн\\w+ систем",
+    "нужен опыт от \\d+ лет|требуется сертификат|нужна лицензи",
+    "личное присутстви|приехать|встреча офлайн|на территории заказчика",
+    "создать интернет[- ]?магазин|интернет[- ]?магазин на (?:wp|wordpress|тильд|битрикс)",
+    "асу тп|\\bscada\\b|\\bплк\\b|промышленн\\w+ автоматизац|проектирование систем",
+    "торгов\\w+ робот|\\btslab\\b|советник для (?:mt4|mt5)|алготрейдинг"
   ],
 
   "skills": {
@@ -416,16 +440,18 @@
   ],
 
   "sources": [
-    {"kind": "flru_rss", "name": "FL.ru", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "enabled": true},
-    {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "enabled": true},
-    {"kind": "telegram_public", "name": "Kwork · тексты и переводы", "channel": "freelance_copywriting", "contact_mode": "platform", "posting_type": "tasks", "enabled": true},
-    {"kind": "telegram_public", "name": "Фриланс Таверна", "channel": "freelancetaverna", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "GetClient", "channel": "GetClient", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "Freelance Choice", "channel": "freelancechoice", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "Заказы на дизайн", "channel": "zakaz_design", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "Digital Tender", "channel": "digitaltender", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "contact_mode": "direct", "posting_type": "mixed", "enabled": true},
-    {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "contact_mode": "direct", "posting_type": "mixed", "enabled": false},
-    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "enabled": false}
+    {"kind": "telegram_public", "name": "Фриланс Таверна", "channel": "freelancetaverna", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "GetClient", "channel": "GetClient", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Freelance Choice", "channel": "freelancechoice", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Заказы на дизайн", "channel": "zakaz_design", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Digital Tender", "channel": "digitaltender", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+
+    {"kind": "flru_rss", "name": "FL.ru", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "quota", "monthly_quota": 15, "enabled": true},
+    {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
+    {"kind": "telegram_public", "name": "Kwork · тексты и переводы", "channel": "freelance_copywriting", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
+    {"kind": "telegram_public", "name": "Заказы IT (перекупщик Kwork)", "channel": "it_zakazy", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
+    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false}
   ]
 }

@@ -195,6 +195,66 @@ class AssessTests(unittest.TestCase):
         self.assertIsNotNone(assessment)
 
 
+class ComputerOnlyTests(unittest.TestCase):
+    """Берём только то, что делается за компьютером и удалённо."""
+
+    def setUp(self):
+        self.cfg = config()
+
+    def test_acting_gig_rejected(self):
+        text = "Ищем актёра / лицо в кадр для рекламного ролика, нужно сняться в видео. Бюджет 20 000 ₽"
+        self.assertTrue(matching.blocked_by_skillset(text, self.cfg))
+
+    def test_turnkey_project_rejected(self):
+        text = ("Разработка платформы управления автопрокатом + 2 сайта бронирования на PHP. "
+                "Компания заказывает разработку под ключ. Бюджет 300 000 ₽")
+        self.assertTrue(matching.blocked_by_skillset(text, self.cfg))
+
+    def test_offline_presence_rejected(self):
+        text = "Нужно приехать и сделать опись имущества на территории заказчика. Бюджет 5 000 ₽"
+        self.assertTrue(matching.blocked_by_skillset(text, self.cfg))
+
+    def test_plain_script_task_still_allowed(self):
+        text = "Написать скрипт по удалению дубликатов фраз из двух списков в Excel. Бюджет 2 500 ₽"
+        self.assertEqual(matching.blocked_by_skillset(text, self.cfg), [])
+
+
+class ScamTests(unittest.TestCase):
+    """Схемы, на которых уже пытались развести."""
+
+    def setUp(self):
+        self.cfg = config()
+        self.now = datetime.now(MOSCOW)
+
+    def reject_stage(self, text):
+        _, rejection = matching.assess(
+            title=text[:80], text=text, published_at=self.now, now=self.now,
+            contacts=["@customer_name"], contact_mode="direct", responses=0, cfg=self.cfg,
+        )
+        return rejection.stage if rejection else None
+
+    def test_card_details_request(self):
+        self.assertEqual(
+            self.reject_stage("Нужно написать текст, 5 000 ₽. Пришлю ссылку, заполните данные карты"),
+            "скам",
+        )
+
+    def test_payment_link_scheme(self):
+        self.assertEqual(
+            self.reject_stage("Нужен текст срочно, бюджет 5 000 ₽. Перейдите по ссылке для оплаты"),
+            "скам",
+        )
+
+    def test_sms_code_request(self):
+        self.assertEqual(
+            self.reject_stage("Написать 5 текстов, 6 000 ₽. Пришлите код подтверждения для доступа"),
+            "скам",
+        )
+
+    def test_safety_note_is_configured(self):
+        self.assertTrue(self.cfg["safety_note"])
+
+
 class TextTests(unittest.TestCase):
     def test_channel_header_is_stripped(self):
         body = matching.strip_channel_chrome(

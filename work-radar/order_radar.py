@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import collections
 import email.utils
 import hashlib
@@ -89,6 +90,7 @@ class Listing:
     published_at: datetime
     contact_mode: str = "platform"
     posting_type: str = "mixed"
+    response_cost: str = "free"
     category: str = ""
     contacts: list[str] = field(default_factory=list)
     responses: int | None = None
@@ -285,18 +287,44 @@ def channel_title(page: str) -> str:
     return clean_text(match.group(1)) if match else ""
 
 
+def recurring_handles(bodies_and_links: list[tuple[str, list[str]]], channel: str,
+                      ignored: Iterable[str]) -> set[str]:
+    """Контакты, которые повторяются из поста в пост, принадлежат каналу, а не заказчику.
+
+    В каналах-перекупщиках под каждым объявлением стоит один и тот же @username
+    администратора. Писать туда бесполезно: сам заказ живёт на платной бирже,
+    а такой контакт лишь выглядит прямым.
+    """
+    counts: collections.Counter = collections.Counter()
+    for body, links in bodies_and_links:
+        for contact in set(extract_contacts(body, links, channel, ignored)):
+            if contact.startswith("@"):
+                counts[contact.lower()] += 1
+    threshold = max(3, int(len(bodies_and_links) * 0.3))
+    return {handle for handle, count in counts.items() if count >= threshold}
+
+
 def parse_telegram_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]:
     channel = source["channel"].lstrip("@")
     page = fetch_url(f"https://t.me/s/{channel}")
     title = channel_title(page)
     parser = TelegramPostParser(channel)
     parser.feed(page)
+
+    posts = [post for post in parser.posts if post.get("post")]
+    bodies = [
+        (matching.strip_channel_chrome(" ".join(post["text"]), title), post["links"])
+        for post in posts
+    ]
+    ignored = list(cfg["ignored_contact_handles"])
+    house_handles = recurring_handles(bodies, channel, ignored)
+    if house_handles:
+        LOG.info("@%s: контакты канала, а не заказчиков: %s", channel, ", ".join(sorted(house_handles)))
+        ignored += [handle.lstrip("@") for handle in house_handles]
+
     listings: list[Listing] = []
-    for post in parser.posts:
-        post_path = post.get("post") or ""
-        if not post_path:
-            continue
-        body = matching.strip_channel_chrome(" ".join(post["text"]), title)
+    for post, (body, _) in zip(posts, bodies):
+        post_path = post["post"]
         if len(body) < 40:
             continue
         headline = body[:120].rsplit(" ", 1)[0] if len(body) > 120 else body
@@ -310,7 +338,8 @@ def parse_telegram_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[L
                 published_at=parse_datetime(post.get("datetime", "")),
                 contact_mode=source.get("contact_mode", "direct"),
                 posting_type=source.get("posting_type", "mixed"),
-                contacts=extract_contacts(body, post["links"], channel, cfg["ignored_contact_handles"]),
+                response_cost=source.get("response_cost", "free"),
+                contacts=extract_contacts(body, post["links"], channel, ignored),
                 raw_links=post["links"],
             )
         )
@@ -344,6 +373,7 @@ def parse_flru_rss(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]
                 published_at=published,
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
+                response_cost=source.get("response_cost", "free"),
                 category=tag("category"),
             )
         )
@@ -370,6 +400,7 @@ def parse_weblancer_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[
                 published_at=parse_datetime(body),
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
+                response_cost=source.get("response_cost", "free"),
                 contacts=extract_contacts(body, article["links"], extra_excluded=cfg["ignored_contact_handles"]),
                 responses=extract_responses(body),
                 raw_links=article["links"],
@@ -412,6 +443,7 @@ def parse_freelancejob_source(source: dict[str, Any], cfg: dict[str, Any]) -> li
                 published_at=parse_datetime(body),
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
+                response_cost=source.get("response_cost", "free"),
                 contacts=extract_contacts(body, [], extra_excluded=cfg["ignored_contact_handles"]),
                 responses=extract_responses(body),
             )
@@ -429,8 +461,12 @@ PARSERS = {
 
 def collect(cfg: dict[str, Any]) -> list[Listing]:
     listings: list[Listing] = []
+    free_only = cfg["filters"].get("only_free_response", False)
     for source in cfg["sources"]:
         if not source.get("enabled", True):
+            continue
+        if free_only and source.get("response_cost", "free") != "free":
+            LOG.info("%s: пропущен — отклик платный", source.get("name", source["kind"]))
             continue
         parser = PARSERS.get(source["kind"])
         if parser is None:
@@ -462,7 +498,25 @@ class Store:
             "CREATE TABLE IF NOT EXISTS earnings "
             "(id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT, amount INTEGER)"
         )
+        self.db.execute(
+            "CREATE TABLE IF NOT EXISTS responses "
+            "(id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT, source TEXT)"
+        )
         self.db.commit()
+
+    def record_response(self, source: str, when: datetime | None = None) -> None:
+        self.db.execute(
+            "INSERT INTO responses(created_at,source) VALUES(?,?)",
+            ((when or datetime.now(MOSCOW)).isoformat(), source),
+        )
+        self.db.commit()
+
+    def responses_used(self, source: str, period: str) -> int:
+        row = self.db.execute(
+            "SELECT COUNT(*) FROM responses WHERE source=? AND created_at LIKE ?",
+            (source, period + "%"),
+        ).fetchone()
+        return int(row[0] or 0)
 
     def has_seen(self, key: str) -> bool:
         return self.db.execute("SELECT 1 FROM seen WHERE key=?", (key,)).fetchone() is not None
@@ -531,12 +585,21 @@ class TelegramBot:
         )
 
 
-def format_alert(listing: Listing, assessment: matching.Assessment) -> str:
+def format_alert(listing: Listing, assessment: matching.Assessment,
+                 cfg: dict[str, Any] | None = None, quota_left: int | None = None) -> str:
     safe = html.escape
+    rules = (cfg or {}).get("safety_note", [])
+    safety = ("🛡 <b>Безопасность:</b>\n" + "\n".join(f"• {safe(rule)}" for rule in rules)) if rules else ""
     money = lambda value: f"{value:,}".replace(",", " ")
     budget = f"{money(assessment.budget_rub)} ₽" if assessment.budget_rub else "не указан"
     if assessment.contact_mode == "direct" and listing.contacts:
-        contact_line = "Писать напрямую: <b>" + " · ".join(safe(c) for c in listing.contacts[:3]) + "</b>"
+        contact_line = ("Писать напрямую, отклик бесплатный: <b>"
+                        + " · ".join(safe(c) for c in listing.contacts[:3]) + "</b>")
+    elif quota_left is not None:
+        contact_line = (f"Отклик через площадку · осталось бесплатных в этом месяце: "
+                        f"<b>{quota_left}</b>")
+    elif listing.response_cost == "paid":
+        contact_line = "⚠️ Отклик через площадку — <b>платный</b>"
     else:
         contact_line = "Отклик через площадку — ссылка внизу"
     description = listing.description[:700]
@@ -560,6 +623,7 @@ def format_alert(listing: Listing, assessment: matching.Assessment) -> str:
         f"<b>Задание:</b>\n{safe(description)}\n\n"
         f"<b>Отправить заказчику:</b>\n<pre>{safe(assessment.reply)}</pre>\n"
         f"<b>Как сделать быстро:</b>\n{plan}\n\n"
+        f"{safety}\n\n"
         f'<a href="{safe(listing.url)}">Открыть оригинал</a>'
     )
 
@@ -613,14 +677,49 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
     return result
 
 
+def quota_for(source_name: str, cfg: dict[str, Any]) -> int | None:
+    for source in cfg["sources"]:
+        if source.get("name") == source_name or source.get("channel") == source_name:
+            return source.get("monthly_quota")
+    return None
+
+
+def quota_state(source_name: str, cfg: dict[str, Any], store: Store,
+                now: datetime | None = None) -> tuple[int | None, bool]:
+    """Сколько бесплатных откликов осталось и можно ли потратить один сегодня.
+
+    Бесплатный аккаунт FL.ru даёт ограниченное число ответов в месяц. Радар
+    растягивает их равномерно до конца месяца, чтобы квота не сгорела за первые дни.
+    """
+    quota = quota_for(source_name, cfg)
+    if quota is None:
+        return None, True
+    now = now or datetime.now(MOSCOW)
+    used_month = store.responses_used(source_name, now.strftime("%Y-%m"))
+    remaining = max(0, quota - used_month)
+    if remaining == 0:
+        return 0, False
+    days_in_month = calendar.monthrange(now.year, now.month)[1]
+    days_left = max(1, days_in_month - now.day + 1)
+    allowance = -(-remaining // days_left)  # округление вверх
+    used_today = store.responses_used(source_name, now.strftime("%Y-%m-%d"))
+    return remaining, used_today < allowance
+
+
 def monitor_once(cfg: dict[str, Any], store: Store, bot: TelegramBot | None, chat_id: str) -> int:
     result = scan(cfg, store)
     limit = cfg["filters"]["max_alerts_per_cycle"]
     sent = 0
     for listing, assessment in result.matches[:limit]:
+        remaining, allowed = quota_state(listing.source, cfg, store)
+        if not allowed:
+            LOG.info("%s: бесплатные отклики на сегодня исчерпаны, заявка отложена", listing.source)
+            continue
         if bot and chat_id:
-            bot.send(chat_id, format_alert(listing, assessment))
+            bot.send(chat_id, format_alert(listing, assessment, cfg, remaining))
             sent += 1
+        if remaining is not None:
+            store.record_response(listing.source)
         store.mark_seen(listing, sent=True, score=assessment.score)
         store.mark_sent(listing.key)
     # Всё, что не поместилось в лимит цикла, намеренно не помечаем показанным —
@@ -641,7 +740,7 @@ def print_report(result: ScanResult, cfg: dict[str, Any]) -> None:
     print("=" * 78)
     for listing, assessment in result.matches:
         print()
-        print(re.sub(r"<[^>]+>", "", html.unescape(format_alert(listing, assessment))))
+        print(re.sub(r"<[^>]+>", "", html.unescape(format_alert(listing, assessment, cfg))))
         print("-" * 78)
 
 
@@ -671,6 +770,24 @@ def sources_text(cfg: dict[str, Any]) -> str:
     return "Источники:\n" + "\n".join(lines)
 
 
+def quota_text(cfg: dict[str, Any], store: Store) -> str:
+    lines = ["📊 Бесплатные отклики"]
+    limited = False
+    for source in cfg["sources"]:
+        quota = source.get("monthly_quota")
+        if quota is None or not source.get("enabled", True):
+            continue
+        limited = True
+        name = source.get("name", source["kind"])
+        remaining, allowed = quota_state(name, cfg, store)
+        today = "можно потратить сегодня" if allowed else "на сегодня хватит, копим на лучшее"
+        lines.append(f"{name}: осталось {remaining} из {quota} — {today}")
+    if not limited:
+        lines.append("Ограниченных площадок нет: все источники с прямым контактом.")
+    lines.append("\nЗасчитать отклик вручную: /spent FL.ru")
+    return "\n".join(lines)
+
+
 def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, bot: TelegramBot) -> None:
     command, *args = text.strip().split()
     command = command.split("@")[0].lower()
@@ -684,6 +801,8 @@ def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, b
             "/status — цель и прогресс\n"
             "/goal 10000 — изменить цель на день\n"
             "/done 2500 — отметить заработок\n"
+            "/quota — сколько бесплатных откликов осталось\n"
+            "/spent FL.ru — засчитать потраченный отклик\n"
             "/sources — список источников\n"
             "/pause и /resume — выключить и включить\n"
             "/test — показать пример карточки",
@@ -692,6 +811,12 @@ def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, b
         bot.send(chat_id, html.escape(status_text(cfg, store)))
     elif command == "/sources":
         bot.send(chat_id, html.escape(sources_text(cfg)))
+    elif command == "/quota":
+        bot.send(chat_id, html.escape(quota_text(cfg, store)))
+    elif command == "/spent" and args:
+        source = " ".join(args)
+        store.record_response(source)
+        bot.send(chat_id, html.escape(f"Отклик засчитан.\n\n{quota_text(cfg, store)}"))
     elif command == "/goal" and args and args[0].isdigit():
         store.set("daily_goal", args[0])
         bot.send(chat_id, f"Новая цель: <b>{int(args[0]):,} ₽</b>".replace(",", " "))
@@ -707,7 +832,7 @@ def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, b
     elif command == "/test":
         listing, assessment = sample_match(cfg)
         if assessment:
-            bot.send(chat_id, format_alert(listing, assessment))
+            bot.send(chat_id, format_alert(listing, assessment, cfg))
         else:
             bot.send(chat_id, "Тестовая заявка не прошла текущие фильтры.")
     else:
@@ -812,7 +937,7 @@ def main() -> int:
         if not assessment:
             print("ОШИБКА: тестовая заявка не прошла фильтры")
             return 1
-        print(re.sub(r"<[^>]+>", "", html.unescape(format_alert(listing, assessment))))
+        print(re.sub(r"<[^>]+>", "", html.unescape(format_alert(listing, assessment, cfg))))
         return 0
     if args.dry_run or args.report:
         print_report(scan(cfg, store, ignore_seen=True), cfg)

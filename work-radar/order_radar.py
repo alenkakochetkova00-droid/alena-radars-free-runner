@@ -588,8 +588,9 @@ class TelegramBot:
 def format_alert(listing: Listing, assessment: matching.Assessment,
                  cfg: dict[str, Any] | None = None, quota_left: int | None = None) -> str:
     safe = html.escape
-    rules = (cfg or {}).get("safety_note", [])
-    safety = ("🛡 <b>Безопасность:</b>\n" + "\n".join(f"• {safe(rule)}" for rule in rules)) if rules else ""
+    # В карточке — одна строка, весь список правил доступен по команде /safety.
+    safety = ("<i>🛡 Для оплаты нужен только номер карты. CVC и коды из СМС — никогда. "
+              "Правила: /safety</i>") if (cfg or {}).get("safety_note") else ""
     money = lambda value: f"{value:,}".replace(",", " ")
     budget = f"{money(assessment.budget_rub)} ₽" if assessment.budget_rub else "не указан"
     if assessment.contact_mode == "direct" and listing.contacts:
@@ -602,29 +603,24 @@ def format_alert(listing: Listing, assessment: matching.Assessment,
         contact_line = "⚠️ Отклик через площадку — <b>платный</b>"
     else:
         contact_line = "Отклик через площадку — ссылка внизу"
-    description = listing.description[:700]
-    if len(listing.description) > 700:
-        description += "…"
-    reasons = "\n".join(f"• {safe(reason)}" for reason in assessment.reasons)
-    plan = "\n".join(f"{index}. {safe(step)}" for index, step in enumerate(assessment.plan, 1))
+    details = "\n".join(f"• {safe(point)}" for point in assessment.details) or "• Подробностей в объявлении нет."
+    price = (f"Заказчик указал: <b>{budget}</b>" if assessment.budget_rub
+             else "Заказчик сумму <b>не указал</b>")
     flags = ""
     if assessment.red_flags:
-        flags = "\n\n⚠️ <b>Проверить перед отправкой:</b>\n" + "\n".join(
-            f"• {safe(flag)}" for flag in assessment.red_flags
-        )
+        flags = "\n⚠️ " + safe(assessment.red_flags[0]) + "\n"
     return (
-        f"🔥 <b>{assessment.score}/100 · {safe(assessment.skill_title)}</b>\n\n"
-        f"<b>{safe(assessment.subject)}</b>\n"
-        f"{safe(listing.source)} · {assessment.age_minutes} мин назад\n"
-        f"Бюджет заказчика: <b>{budget}</b> → предложить <b>{money(assessment.offer_rub)} ₽</b>\n"
-        f"Работы примерно на {assessment.minutes} мин · ≈ {money(assessment.hourly_rub)} ₽/час\n"
-        f"{contact_line}\n\n"
-        f"<b>Почему стоит писать:</b>\n{reasons}{flags}\n\n"
-        f"<b>Задание:</b>\n{safe(description)}\n\n"
-        f"<b>Отправить заказчику:</b>\n<pre>{safe(assessment.reply)}</pre>\n"
-        f"<b>Как сделать быстро:</b>\n{plan}\n\n"
-        f"{safety}\n\n"
-        f'<a href="{safe(listing.url)}">Открыть оригинал</a>'
+        f"🔥 <b>{assessment.score}/100 · {safe(assessment.skill_title)}</b>\n"
+        f"<i>{safe(listing.source)} · {assessment.age_minutes} мин назад</i>\n\n"
+        f"📌 <b>Задача</b>\n{safe(assessment.short_line)}\n\n"
+        f"📄 <b>Подробнее</b>\n{details}\n\n"
+        f"💰 <b>Стоимость</b>\n{price} (предложить: <b>{money(assessment.offer_rub)} ₽</b>)\n\n"
+        f"✍️ <b>Куда писать</b>\n{contact_line}\n\n"
+        f"📨 <b>Текст письма</b>\n<pre>{safe(assessment.reply)}</pre>\n\n"
+        f"⏱ <b>Времени на работу</b>\n{safe(assessment.duration)} с запасом\n\n"
+        f"🔗 <a href=\"{safe(listing.url)}\">Открыть заказ</a>\n"
+        f"{flags}"
+        f"\n{safety}"
     )
 
 
@@ -802,6 +798,7 @@ def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, b
             "/goal 10000 — изменить цель на день\n"
             "/done 2500 — отметить заработок\n"
             "/quota — сколько бесплатных откликов осталось\n"
+            "/safety — правила безопасной переписки\n"
             "/spent FL.ru — засчитать потраченный отклик\n"
             "/sources — список источников\n"
             "/pause и /resume — выключить и включить\n"
@@ -813,6 +810,9 @@ def handle_command(text: str, chat_id: str, cfg: dict[str, Any], store: Store, b
         bot.send(chat_id, html.escape(sources_text(cfg)))
     elif command == "/quota":
         bot.send(chat_id, html.escape(quota_text(cfg, store)))
+    elif command == "/safety":
+        rules = "\n".join(f"• {html.escape(rule)}" for rule in cfg.get("safety_note", []))
+        bot.send(chat_id, f"🛡 <b>Правила безопасной переписки</b>\n\n{rules}")
     elif command == "/spent" and args:
         source = " ".join(args)
         store.record_response(source)

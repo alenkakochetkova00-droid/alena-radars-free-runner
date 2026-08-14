@@ -382,6 +382,9 @@ class Assessment:
     skill_id: str
     skill_title: str
     subject: str
+    short_line: str
+    details: list[str]
+    duration: str
     quantity: int
     minutes: int
     offer_rub: int
@@ -440,6 +443,72 @@ def plural(count: int, forms: list[str]) -> str:
 
 def money(value: int) -> str:
     return f"{value:,}".replace(",", " ")
+
+
+_NOISE_SENTENCE = re.compile(
+    r"оплата на любую карту|разместить|категории|связаться с заказчиком|"
+    r"открыть оригинал|подписаться|наш канал|бюджет\s*:|〰|подробности в личн|"
+    r"жду ваших откликов|пишите в личные|заранее спасибо|всем привет|добрый день|здравствуйте",
+    flags=re.I,
+)
+
+
+def clean_fragment(value: str) -> str:
+    """Убирает эмодзи, разделители и хвосты бирж, оставляя человеческий текст."""
+    value = re.sub(r"[\U0001F300-\U0001FAFF☀-➿️⬀-⯿]", " ", value)
+    value = re.sub(r"#[\w_]+", " ", value)
+    value = re.sub(r"[〰➖—–-]{2,}", " ", value)
+    value = re.sub(r"\(Бюджет[^)]*\)", " ", value, flags=re.I)
+    value = re.sub(r"https?://\S+", " ", value)
+    return re.sub(r"\s+", " ", value).strip(" .,;:—-")
+
+
+def short_task_line(subject: str, skill: dict[str, Any], quantity: int) -> str:
+    """Одна строка: что нужно сделать и в каком объёме."""
+    line = clean_fragment(subject)
+    forms = skill.get("unit_forms")
+    if quantity > 1 and forms and not re.search(rf"\b{quantity}\b", line):
+        line += f" — {quantity} {plural(quantity, forms)}"
+    if line and not line.endswith("."):
+        line += "."
+    return line[0].upper() + line[1:] if line else "Задача без описания."
+
+
+def key_points(text: str, limit: int = 5) -> list[str]:
+    """Выжимка из описания: только предложения по делу, без воды и реквизитов."""
+    body = clean_fragment(normalize(text))
+    points: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+|(?:^|\s)[•·*]\s*|\n", body):
+        sentence = sentence.strip(" .,;:—-")
+        if _NOISE_SENTENCE.search(sentence):
+            continue
+        # Короткие фразы про срок важнее длины: «Сделать надо сегодня» терять нельзя.
+        if len(sentence) < 25 and not re.search(r"сегодня|завтра|срочн|дедлайн|к вечеру|до \d", sentence, re.I):
+            continue
+        if len(sentence) > 190:
+            sentence = sentence[:190].rsplit(" ", 1)[0] + "…"
+        if sentence[0].islower():
+            sentence = sentence[0].upper() + sentence[1:]
+        if sentence not in points:
+            points.append(sentence)
+        if len(points) >= limit:
+            break
+    return points
+
+
+def human_duration(minutes: int, margin: float = 1.6) -> str:
+    """Оценка с запасом: лучше пообещать больше и сдать раньше."""
+    padded = minutes * margin
+    if padded <= 35:
+        return "около 30 минут"
+    if padded <= 50:
+        return "около 45 минут"
+    if padded <= 75:
+        return "около часа"
+    if padded <= 105:
+        return "около полутора часов"
+    hours = round(padded / 60)
+    return f"около {hours} {plural(hours, ['часа', 'часов', 'часов'])}"
 
 
 def build_reply(subject: str, skill: dict[str, Any], quantity: int, offer: int,
@@ -547,19 +616,22 @@ def assess(
     # 8. Баллы.
     urgency, urgency_word = urgency_level(body)
     freshness = 30 * max(0.0, 1 - age_minutes / filters["max_age_minutes"])
-    fit = min(25, 10 + skill_match.hits * 5)
-    money = min(20, hourly / filters["minimum_hourly_rub"] * 10)
+    fit = min(20, 8 + skill_match.hits * 4)
+    money = min(15, hourly / filters["minimum_hourly_rub"] * 7)
     contact_points = 15 if (contacts and contact_mode == "direct") else 6
-    competition = 10 if responses is None else max(0, 10 - responses)
-    score = int(round(min(100, freshness + fit + money + contact_points + competition + urgency * 2)))
+    competition = 8 if responses is None else max(0, 8 - responses)
+    # Много простых задач выгоднее двух долгих: короткая работа получает надбавку.
+    simplicity = 12 * max(0.0, 1 - skill_match.minutes / filters["max_task_minutes"])
+    score = int(round(min(
+        100, freshness + fit + money + contact_points + competition + simplicity + urgency * 2
+    )))
     if score < filters["minimum_score"]:
         return None, Rejection("баллы", f"{score} из 100, порог {filters['minimum_score']}")
 
     # 9. Объяснение и предупреждения.
     reasons = [
         f"свежее объявление: {age_minutes} мин назад",
-        f"попадает в навык «{skill_match.title}», оценка работы ≈ {skill_match.minutes} мин",
-        f"ставка ≈ {hourly:,} ₽/час при цене {offer:,} ₽".replace(",", " "),
+        f"попадает в навык «{skill_match.title}», работы примерно на {skill_match.minutes} мин",
     ]
     if budget.amount:
         reasons.append(f"{budget_note}, предлагаем ниже — заметное преимущество перед конкурентами")
@@ -589,6 +661,9 @@ def assess(
         skill_id=skill_match.skill_id,
         skill_title=skill_match.title,
         subject=subject,
+        short_line=short_task_line(subject, skill, skill_match.quantity),
+        details=key_points(text),
+        duration=human_duration(skill_match.minutes),
         quantity=skill_match.quantity,
         minutes=skill_match.minutes,
         offer_rub=offer,

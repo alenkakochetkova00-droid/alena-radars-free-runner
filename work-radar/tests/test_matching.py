@@ -126,6 +126,46 @@ class PricingTests(unittest.TestCase):
         self.assertEqual(matching.plural(11, forms), "страниц")
 
 
+class SmallTaskTests(unittest.TestCase):
+    """Ставка на поток: много мелких заказов лучше двух дорогих и долгих."""
+
+    def setUp(self):
+        self.cfg = config()
+        self.now = datetime.now(MOSCOW)
+
+    def build(self, text):
+        return matching.assess(
+            title=text[:80], text=text, published_at=self.now, now=self.now,
+            contacts=["@customer_name"], contact_mode="direct", responses=0, cfg=self.cfg,
+        )
+
+    def test_cheap_task_from_500_is_accepted(self):
+        assessment, rejection = self.build(
+            "Нужно срочно написать текст на сайт про доставку. Бюджет 900 руб."
+        )
+        self.assertIsNone(rejection, rejection.reason if rejection else "")
+        self.assertLessEqual(assessment.offer_rub, 900)
+        self.assertGreaterEqual(assessment.offer_rub, self.cfg["filters"]["minimum_offer_rub"])
+
+    def test_minimum_price_floor_is_500(self):
+        self.assertEqual(self.cfg["filters"]["minimum_offer_rub"], 500)
+
+    def test_short_task_outranks_long_one(self):
+        quick, _ = self.build("Срочно нужно написать текст на сайт. Бюджет 2 000 руб.")
+        slow, _ = self.build("Срочно нужно написать 6 текстов на сайт. Бюджет 6 000 руб.")
+        self.assertIsNotNone(quick)
+        self.assertIsNotNone(slow)
+        self.assertLess(quick.minutes, slow.minutes)
+        self.assertGreater(quick.score, slow.score)
+
+    def test_task_longer_than_the_limit_is_rejected(self):
+        assessment, rejection = self.build(
+            "Нужно написать 40 текстов на сайт про доставку. Бюджет 20 000 руб."
+        )
+        self.assertIsNone(assessment)
+        self.assertEqual(rejection.stage, "объём")
+
+
 class AssessTests(unittest.TestCase):
     def setUp(self):
         self.cfg = config()
@@ -218,6 +258,12 @@ class ComputerOnlyTests(unittest.TestCase):
         text = "Написать скрипт по удалению дубликатов фраз из двух списков в Excel. Бюджет 2 500 ₽"
         self.assertEqual(matching.blocked_by_skillset(text, self.cfg), [])
 
+    def test_server_administration_rejected(self):
+        """Развернуть игровой сервер через чат нельзя — нужен доступ к железу."""
+        text = ("Скрипт для создания зеркал игрового сервера кс 1.6. Развертывание зеркал "
+                "основного сервера, подключение к мастер-серверу Steam. Бюджет 5 000 ₽")
+        self.assertTrue(matching.blocked_by_skillset(text, self.cfg))
+
 
 class ScamTests(unittest.TestCase):
     """Схемы, на которых уже пытались развести."""
@@ -253,6 +299,57 @@ class ScamTests(unittest.TestCase):
 
     def test_safety_note_is_configured(self):
         self.assertTrue(self.cfg["safety_note"])
+
+
+class CardTests(unittest.TestCase):
+    """Карточка должна читаться с телефона за десять секунд."""
+
+    def setUp(self):
+        self.cfg = config()
+        self.now = datetime.now(MOSCOW)
+
+    def build(self, text):
+        assessment, _ = matching.assess(
+            title=text[:80], text=text, published_at=self.now, now=self.now,
+            contacts=["@customer_name"], contact_mode="direct", responses=0, cfg=self.cfg,
+        )
+        return assessment
+
+    def test_short_line_is_one_sentence(self):
+        assessment = self.build(GOOD_TASK)
+        self.assertTrue(assessment.short_line.endswith("."))
+        self.assertLess(len(assessment.short_line), 130)
+
+    def test_details_drop_boilerplate_and_emoji(self):
+        text = (
+            "📌 Нужно перевести документацию 📝 Необходимо перевести 10 страниц на русский "
+            "с сохранением таблиц. Сделать надо сегодня. 〰️ 〰️ 💳 Бюджет: 12 000 ₽ 〰️ "
+            "🌐 Оплата на любую карту мира #переводы"
+        )
+        points = matching.key_points(text)
+        joined = " ".join(points)
+        self.assertNotIn("〰", joined)
+        self.assertNotIn("#переводы", joined)
+        self.assertNotIn("Оплата на любую карту", joined)
+        self.assertIn("сохранением таблиц", joined)
+
+    def test_details_keep_the_deadline(self):
+        points = matching.key_points(
+            "Необходимо перевести 10 страниц с сохранением таблиц. Сделать надо сегодня."
+        )
+        self.assertTrue(any("сегодня" in point.lower() for point in points))
+
+    def test_duration_has_a_safety_margin(self):
+        """Обещаем с запасом: 88 минут работы — это «около 2 часов», а не «полтора»."""
+        self.assertEqual(matching.human_duration(25), "около 45 минут")
+        self.assertEqual(matching.human_duration(88), "около 2 часов")
+        self.assertEqual(matching.human_duration(180), "около 5 часов")
+
+    def test_price_is_a_single_total(self):
+        """Никаких ставок в час и делений — одна сумма за всё задание."""
+        assessment = self.build(GOOD_TASK)
+        self.assertIsInstance(assessment.offer_rub, int)
+        self.assertNotIn("час", assessment.short_line.lower())
 
 
 class TextTests(unittest.TestCase):

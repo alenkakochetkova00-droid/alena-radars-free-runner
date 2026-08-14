@@ -20,13 +20,13 @@
     "max_age_minutes": 45,
     "max_task_minutes": 120,
     "require_direct_contact": true,
-    "require_budget": false,
+    "require_budget": true,
     "require_budget_outside_task_boards": true,
     "minimum_offer_rub": 500,
     "minimum_hourly_rub": 900,
     "minimum_score": 55,
     "max_alerts_per_cycle": 10,
-    "only_free_response": false
+    "only_free_response": true
   },
 
   "safety_note": [
@@ -451,7 +451,7 @@
     {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
 
-    {"kind": "flru_rss", "name": "FL.ru", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "quota", "monthly_quota": 15, "enabled": true},
+    {"kind": "flru_rss", "name": "FL.ru", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "telegram_public", "name": "Kwork · тексты и переводы", "channel": "freelance_copywriting", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "telegram_public", "name": "Заказы IT (перекупщик Kwork)", "channel": "it_zakazy", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},

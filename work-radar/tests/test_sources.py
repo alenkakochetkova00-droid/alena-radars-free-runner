@@ -77,11 +77,19 @@ class FreeSourceTests(unittest.TestCase):
 
 
 class QuotaTests(unittest.TestCase):
-    """Бесплатные отклики нужно растянуть на месяц, а не сжечь за первый день."""
+    """Механика квоты на случай площадки с бесплатным лимитом откликов.
+
+    Ни один включённый источник её сейчас не использует: FL.ru продаёт отклики
+    поштучно, а не выдаёт бесплатный месячный лимит. Проверяем на синтетической
+    настройке, чтобы механика была готова, если такая площадка появится.
+    """
 
     def setUp(self):
         import tempfile
-        self.cfg = R.load_config(ROOT / "config.json")
+        self.cfg = {"sources": [
+            {"kind": "flru_rss", "name": "Биржа с лимитом", "response_cost": "quota", "monthly_quota": 15},
+            {"kind": "telegram_public", "name": "Фриланс Таверна", "response_cost": "free"},
+        ]}
         self.tmp = tempfile.TemporaryDirectory()
         self.store = R.Store(Path(self.tmp.name) / "test.db")
 
@@ -94,14 +102,14 @@ class QuotaTests(unittest.TestCase):
         self.assertTrue(allowed)
 
     def test_fresh_month_allows_a_response(self):
-        remaining, allowed = R.quota_state("FL.ru", self.cfg, self.store)
+        remaining, allowed = R.quota_state("Биржа с лимитом", self.cfg, self.store)
         self.assertEqual(remaining, 15)
         self.assertTrue(allowed)
 
     def test_exhausted_quota_blocks(self):
         for _ in range(15):
-            self.store.record_response("FL.ru")
-        remaining, allowed = R.quota_state("FL.ru", self.cfg, self.store)
+            self.store.record_response("Биржа с лимитом")
+        remaining, allowed = R.quota_state("Биржа с лимитом", self.cfg, self.store)
         self.assertEqual(remaining, 0)
         self.assertFalse(allowed)
 
@@ -110,8 +118,8 @@ class QuotaTests(unittest.TestCase):
         from datetime import datetime
         now = datetime(2026, 9, 1, 12, 0, tzinfo=R.MOSCOW)
         for _ in range(3):
-            self.store.record_response("FL.ru", when=now)
-        remaining, allowed = R.quota_state("FL.ru", self.cfg, self.store, now=now)
+            self.store.record_response("Биржа с лимитом", when=now)
+        remaining, allowed = R.quota_state("Биржа с лимитом", self.cfg, self.store, now=now)
         self.assertEqual(remaining, 12)
         self.assertFalse(allowed, "дневная норма исчерпана, но радар всё равно разрешает отклик")
 

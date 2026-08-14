@@ -612,14 +612,11 @@ def format_alert(listing: Listing, assessment: matching.Assessment,
     else:
         contact_line = "Отклик через площадку — ссылка внизу"
     details = "\n".join(f"• {safe(point)}" for point in assessment.details) or "• Подробностей в объявлении нет."
-    price = (f"Заказчик указал: <b>{budget}</b>" if assessment.budget_rub
-             else "Заказчик сумму <b>не указал</b>")
+    price = f"Заказчик указал: <b>{budget}</b>"
     flags = ""
     if assessment.red_flags:
         flags = "\n⚠️ " + safe(assessment.red_flags[0]) + "\n"
     return (
-        f"🔥 <b>{assessment.score}/100 · {safe(assessment.skill_title)}</b>\n"
-        f"<i>{safe(listing.source)} · {assessment.age_minutes} мин назад</i>\n\n"
         f"📌 <b>Задача</b>\n{safe(assessment.short_line)}\n\n"
         f"📄 <b>Подробнее</b>\n{details}\n\n"
         f"💰 <b>Стоимость</b>\n{price} (предложить: <b>{money(assessment.offer_rub)} ₽</b>)\n\n"

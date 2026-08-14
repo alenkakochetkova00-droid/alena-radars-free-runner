@@ -150,6 +150,22 @@ class SmallTaskTests(unittest.TestCase):
     def test_minimum_price_floor_is_500(self):
         self.assertEqual(self.cfg["filters"]["minimum_offer_rub"], 500)
 
+    def test_no_price_is_invented_without_a_budget(self):
+        """Заказ «бюджет по договорённости» — не повод называть сумму наугад.
+
+        Именно так радар предложил 1 000 ₽ там, где рынок ставил 150 ₽.
+        """
+        assessment, rejection = self.build(
+            "Нужно изменить презентацию в пдф: убрать название, изменить цены. Бюджет по договоренности."
+        )
+        self.assertIsNone(assessment)
+        self.assertEqual(rejection.stage, "бюджет")
+
+    def test_offer_never_exceeds_what_the_customer_named(self):
+        assessment, _ = self.build("Срочно нужно поправить текст на сайте. Бюджет 800 руб.")
+        self.assertIsNotNone(assessment)
+        self.assertLessEqual(assessment.offer_rub, 800)
+
     def test_short_task_outranks_long_one(self):
         quick, _ = self.build("Срочно нужно написать текст на сайт. Бюджет 2 000 руб.")
         slow, _ = self.build("Срочно нужно написать 6 текстов на сайт. Бюджет 6 000 руб.")

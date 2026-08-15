@@ -517,6 +517,19 @@
   ],
 
   "sources": [
+    {"kind": "telegram_chats", "name": "Фриланс-чаты", "response_cost": "free", "max_age_minutes": 60, "per_chat": 40, "enabled": true,
+     "chats": [
+       "onlayn_rabota", "frilancru", "jobospherechat", "proffreelancee_chat",
+       "workk_onchat", "frilanc", "bizneschats", "freelance_birzha",
+       "birjafreelance", "freelance_chatik0", "freelansvipchat", "freelance_chat_ru",
+       "RussianFreelance", "freelance_vakansiii", "workk_onhrchat", "frilans_chat3",
+       "freeassistant", "frilans_chatik", "free_lancers_chat", "freelance_work",
+       "freelance_in_telegram", "freelance_freelancer", "ewoxchat",
+       "boutiquefreelancechat", "freelancevacans", "freelancers_vacancy",
+       "frilans_uslugi_vakansii", "free_chat_for_freelance", "jobcht",
+       "digitalchatikk", "freelanser2", "frilanserSM", "yourfreelancework"
+     ]},
+
     {"kind": "telegram_public", "name": "Фриланс Таверна", "channel": "freelancetaverna", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Фриланс · вакансии · удалёнка", "channel": "freelancce", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Work On", "channel": "workk_on", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},

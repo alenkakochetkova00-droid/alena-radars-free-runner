@@ -34,6 +34,7 @@ from typing import Any, Iterable
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import chat_reader  # noqa: E402
 import matching  # noqa: E402
 
 
@@ -476,8 +477,49 @@ def parse_freelancejob_source(source: dict[str, Any], cfg: dict[str, Any]) -> li
     return listings
 
 
+def parse_telegram_chats(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]:
+    """Сообщения из публичных чатов: автор сообщения и есть контакт заказчика."""
+    if not chat_reader.is_configured():
+        LOG.info("Чтение чатов не настроено — источник пропущен (см. login_chats.py)")
+        return []
+    window = source.get("max_age_minutes") or cfg["filters"]["max_age_minutes"]
+    try:
+        messages = chat_reader.read_chats(
+            source["chats"], max_age_minutes=window, per_chat=source.get("per_chat", 40)
+        )
+    except chat_reader.ChatReaderUnavailable as exc:
+        LOG.info("Чтение чатов недоступно: %s", exc)
+        return []
+
+    listings: list[Listing] = []
+    for item in messages:
+        body = matching.normalize(item["text"])
+        if len(body) < 40:
+            continue
+        contacts = [item["contact"]] if item["contact"] else []
+        contacts += [c for c in extract_contacts(body, [], item["chat"], cfg["ignored_contact_handles"])
+                     if c not in contacts]
+        listings.append(
+            Listing(
+                source=f"Чат · @{item['chat'].lstrip('@')}",
+                external_id=f"{item['chat']}/{item['id']}",
+                title=body[:120].rsplit(" ", 1)[0] if len(body) > 120 else body,
+                description=body,
+                url=item["url"],
+                published_at=item["date"].astimezone(MOSCOW),
+                contact_mode="direct",
+                posting_type="mixed",
+                response_cost="free",
+                max_age_minutes=source.get("max_age_minutes"),
+                contacts=contacts,
+            )
+        )
+    return listings
+
+
 PARSERS = {
     "telegram_public": parse_telegram_source,
+    "telegram_chats": parse_telegram_chats,
     "flru_rss": parse_flru_rss,
     "weblancer": parse_weblancer_source,
     "freelancejob": parse_freelancejob_source,

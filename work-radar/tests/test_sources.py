@@ -209,5 +209,46 @@ class LogicVersionTests(unittest.TestCase):
         reopened = R.Store(self.path)
         self.assertTrue(reopened.has_seen("k"))
 
+
+class ChatSourceTests(unittest.TestCase):
+    """Чтение чатов — необязательная возможность: без настройки радар работает."""
+
+    def setUp(self):
+        self.cfg = R.load_config(ROOT / "config.json")
+        self.source = next(s for s in self.cfg["sources"] if s["kind"] == "telegram_chats")
+
+    def test_chats_are_configured(self):
+        self.assertGreaterEqual(len(self.source["chats"]), 20)
+
+    def test_missing_session_does_not_break_the_scan(self):
+        import chat_reader
+        original = chat_reader.is_configured
+        chat_reader.is_configured = lambda: False
+        try:
+            self.assertEqual(R.parse_telegram_chats(self.source, self.cfg), [])
+        finally:
+            chat_reader.is_configured = original
+
+    def test_message_author_becomes_the_contact(self):
+        import chat_reader
+        from datetime import datetime
+        was_configured, was_read = chat_reader.is_configured, chat_reader.read_chats
+        chat_reader.is_configured = lambda: True
+        chat_reader.read_chats = lambda chats, max_age_minutes, per_chat: [{
+            "chat": "frilancru", "id": 42, "date": datetime.now(R.MOSCOW),
+            "text": "Срочно нужно перевести документ на 5 страниц, бюджет 3000 руб",
+            "contact": "@real_customer",
+            "url": "https://t.me/frilancru/42",
+        }]
+        try:
+            listings = R.parse_telegram_chats(self.source, self.cfg)
+        finally:
+            chat_reader.is_configured, chat_reader.read_chats = was_configured, was_read
+        self.assertEqual(len(listings), 1)
+        self.assertEqual(listings[0].contacts, ["@real_customer"])
+        self.assertEqual(listings[0].contact_mode, "direct")
+        self.assertEqual(listings[0].response_cost, "free")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

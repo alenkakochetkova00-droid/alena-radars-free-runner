@@ -293,6 +293,32 @@ class ComputerOnlyTests(unittest.TestCase):
         text = "Нужно приехать и сделать опись имущества на территории заказчика. Бюджет 5 000 ₽"
         self.assertTrue(matching.blocked_by_skillset(text, self.cfg))
 
+    def test_presentation_is_our_work(self):
+        match = matching.match_skill(
+            "нужно собрать презентацию на 12 слайдов для инвесторов", self.cfg)
+        self.assertEqual(match.skill_id, "presentations")
+        self.assertEqual(match.quantity, 12)
+
+    def test_document_edit_is_our_work(self):
+        match = matching.match_skill(
+            "нужно изменить цифры в документе, шрифт и расстояние оставить", self.cfg)
+        self.assertEqual(match.skill_id, "doc_edit")
+
+    def test_vector_graphics_is_our_work(self):
+        match = matching.match_skill(
+            "нужна блок-схема процесса согласования и иконки для сайта", self.cfg)
+        self.assertEqual(match.skill_id, "vector_graphics")
+
+    def test_illustration_still_rejected(self):
+        """Векторные схемы берём, а рисование иллюстраций — нет."""
+        self.assertTrue(matching.blocked_by_skillset(
+            "нужно нарисовать иллюстрацию персонажа для афиши", self.cfg))
+
+    def test_one_c_is_not_ours(self):
+        """1С требует доступа к копии заказчика — сдать результат нельзя."""
+        match = matching.match_skill("подстановка цены мрц из марки в рмк 1с", self.cfg)
+        self.assertIsNone(match)
+
     def test_plain_script_task_still_allowed(self):
         text = "Написать скрипт по удалению дубликатов фраз из двух списков в Excel. Бюджет 2 500 ₽"
         self.assertEqual(matching.blocked_by_skillset(text, self.cfg), [])

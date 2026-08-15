@@ -102,6 +102,11 @@ class FlruOpenToAllTests(unittest.TestCase):
         finally:
             R.fetch_url = original
 
+    def test_paid_responses_are_hidden_by_default(self):
+        """Платные отклики не нужны: в рабочей настройке их не должно быть видно."""
+        cfg = R.load_config(ROOT / "config.json")
+        self.assertTrue(cfg["filters"]["only_free_response"])
+
     def test_paid_orders_are_dropped(self):
         listings = self.parse(free_only=True)
         self.assertEqual(len(listings), 1)

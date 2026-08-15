@@ -41,6 +41,11 @@ ROOT = Path(__file__).resolve().parent
 MOSCOW = ZoneInfo("Europe/Moscow")
 LOG = logging.getLogger("order-radar")
 
+# Версия логики отбора. Когда она меняется, список просмотренных заявок
+# очищается: иначе заказы, отсеянные из-за прежней ошибки, останутся
+# помеченными как показанные и никогда не всплывут после исправления.
+LOGIC_VERSION = "2026-08-15-boards-without-timestamp"
+
 
 def load_env(path: Path) -> None:
     if not path.exists():
@@ -525,6 +530,17 @@ class Store:
             "(id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT, source TEXT)"
         )
         self.db.commit()
+        self._reset_seen_on_logic_change()
+
+    def _reset_seen_on_logic_change(self) -> None:
+        if self.get("logic_version") == LOGIC_VERSION:
+            return
+        dropped = self.db.execute("SELECT COUNT(*) FROM seen").fetchone()[0]
+        self.db.execute("DELETE FROM seen")
+        self.db.commit()
+        self.set("logic_version", LOGIC_VERSION)
+        if dropped:
+            LOG.info("Логика отбора изменилась: %d заявок будут пересмотрены заново", dropped)
 
     def record_response(self, source: str, when: datetime | None = None) -> None:
         self.db.execute(

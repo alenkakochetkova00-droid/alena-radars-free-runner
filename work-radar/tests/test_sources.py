@@ -174,5 +174,40 @@ class QuotaTests(unittest.TestCase):
         self.assertFalse(allowed, "дневная норма исчерпана, но радар всё равно разрешает отклик")
 
 
+
+
+class LogicVersionTests(unittest.TestCase):
+    """После изменения логики отбора отсеянные заявки надо пересмотреть заново."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        self.path = Path(self.tmp.name) / "test.db"
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_seen_is_cleared_when_logic_changes(self):
+        store = R.Store(self.path)
+        store.db.execute(
+            "INSERT INTO seen(key,first_seen,source,title,sent,score) VALUES('k','now','s','t',0,0)")
+        store.db.commit()
+        store.set("logic_version", "старая-версия")
+        store.db.close()
+
+        reopened = R.Store(self.path)
+        self.assertFalse(reopened.has_seen("k"))
+        self.assertEqual(reopened.get("logic_version"), R.LOGIC_VERSION)
+
+    def test_seen_survives_when_logic_is_the_same(self):
+        store = R.Store(self.path)
+        store.db.execute(
+            "INSERT INTO seen(key,first_seen,source,title,sent,score) VALUES('k','now','s','t',0,0)")
+        store.db.commit()
+        store.db.close()
+
+        reopened = R.Store(self.path)
+        self.assertTrue(reopened.has_seen("k"))
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

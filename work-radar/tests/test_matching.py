@@ -245,6 +245,29 @@ class AssessTests(unittest.TestCase):
         self.assertIsNone(assessment)
         self.assertEqual(rejection.stage, "свежесть")
 
+    def test_board_without_a_timestamp_is_not_dropped(self):
+        """Биржа может не публиковать время. Отсекать по неизвестному возрасту нельзя.
+
+        Из-за этого FreelanceJob и Weblancer целиком уходили в «несвежие».
+        """
+        assessment, rejection = self.assess(GOOD_TASK, published_at=None)
+        self.assertIsNone(rejection, rejection.reason if rejection else "")
+        self.assertEqual(assessment.age_minutes, 0)
+
+    def test_implausible_sum_rejected(self):
+        """280 000 ₽ за час работы — это разобранная зарплата, а не бюджет задачи."""
+        assessment, rejection = self.assess(
+            "Срочно нужно написать текст на сайт про доставку. Бюджет 400 000 руб."
+        )
+        self.assertIsNone(assessment)
+        self.assertEqual(rejection.stage, "сумма неправдоподобна")
+
+    def test_sales_role_is_a_vacancy(self):
+        assessment, _ = self.assess(
+            "Ищем партнера по продажам / менеджера по работе с клиентами, IT-продукт, 40%"
+        )
+        self.assertIsNone(assessment)
+
     def test_scam_rejected(self):
         assessment, rejection = self.assess(
             "Нужно срочно оставить положительный отзыв о работе магазина. Бюджет 700 руб."

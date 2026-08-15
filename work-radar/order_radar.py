@@ -87,10 +87,11 @@ class Listing:
     title: str
     description: str
     url: str
-    published_at: datetime
+    published_at: datetime | None
     contact_mode: str = "platform"
     posting_type: str = "mixed"
     response_cost: str = "free"
+    max_age_minutes: int | None = None
     category: str = ""
     contacts: list[str] = field(default_factory=list)
     responses: int | None = None
@@ -339,6 +340,7 @@ def parse_telegram_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[L
                 contact_mode=source.get("contact_mode", "direct"),
                 posting_type=source.get("posting_type", "mixed"),
                 response_cost=source.get("response_cost", "free"),
+                max_age_minutes=source.get("max_age_minutes"),
                 contacts=extract_contacts(body, post["links"], channel, ignored),
                 raw_links=post["links"],
             )
@@ -385,6 +387,7 @@ def parse_flru_rss(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
                 response_cost=response_cost,
+                max_age_minutes=source.get("max_age_minutes"),
                 category=tag("category"),
             )
         )
@@ -401,6 +404,10 @@ def parse_weblancer_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[
         item_url = article["url"]
         if not item_url:
             continue
+        # Закреплённая реклама и вакансии, стянутые поисковым ботом, — это не заказы.
+        # У них ещё и цена-заглушка вроде «4999 $», которая ломает расчёт.
+        if re.match(r"Срочный заказ \(закреплен\)|Найден поисковым ботом", body):
+            continue
         listings.append(
             Listing(
                 source="Weblancer",
@@ -408,10 +415,11 @@ def parse_weblancer_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[
                 title=clean_text(" ".join(article["title"])) or body[:100],
                 description=body,
                 url=item_url,
-                published_at=parse_datetime(body),
+                published_at=None,
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
                 response_cost=source.get("response_cost", "free"),
+                max_age_minutes=source.get("max_age_minutes"),
                 contacts=extract_contacts(body, article["links"], extra_excluded=cfg["ignored_contact_handles"]),
                 responses=extract_responses(body),
                 raw_links=article["links"],
@@ -451,10 +459,11 @@ def parse_freelancejob_source(source: dict[str, Any], cfg: dict[str, Any]) -> li
                 title=title,
                 description=body,
                 url=absolute_url(url, match.group("href")),
-                published_at=parse_datetime(body),
+                published_at=None,
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
                 response_cost=source.get("response_cost", "free"),
+                max_age_minutes=source.get("max_age_minutes"),
                 contacts=extract_contacts(body, [], extra_excluded=cfg["ignored_contact_handles"]),
                 responses=extract_responses(body),
             )
@@ -664,7 +673,7 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
     now = now or datetime.now(MOSCOW)
     result = ScanResult()
     seen_subjects: set[str] = set()
-    for listing in sorted(collect(cfg), key=lambda item: item.published_at, reverse=True):
+    for listing in sorted(collect(cfg), key=lambda item: item.published_at or now, reverse=True):
         result.total += 1
         if store is not None and not ignore_seen and store.has_seen(listing.key):
             result.funnel["уже присылали"] += 1
@@ -675,7 +684,7 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
         assessment, rejection = matching.assess(
             title=listing.title,
             text=listing.description,
-            published_at=listing.published_at.astimezone(MOSCOW),
+            published_at=listing.published_at.astimezone(MOSCOW) if listing.published_at else None,
             now=now,
             contacts=listing.contacts,
             contact_mode=listing.contact_mode,
@@ -684,6 +693,7 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
             category=listing.category,
             posting_type=listing.posting_type,
             response_cost=listing.response_cost,
+            max_age_minutes=listing.max_age_minutes,
         )
         if rejection is not None:
             result.funnel[rejection.stage] += 1

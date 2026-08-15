@@ -552,7 +552,7 @@ def assess(
     *,
     title: str,
     text: str,
-    published_at: datetime,
+    published_at: datetime | None,
     now: datetime,
     contacts: list[str],
     contact_mode: str,
@@ -561,15 +561,20 @@ def assess(
     category: str = "",
     posting_type: str = "mixed",
     response_cost: str = "free",
+    max_age_minutes: int | None = None,
 ) -> tuple[Assessment | None, Rejection | None]:
     """Главная функция: пропускать объявление или нет и на каких условиях."""
     filters = cfg["filters"]
     body = normalize(f"{title}. {text}")
 
-    # 1. Свежесть — самый дешёвый и самый важный отсев.
-    age_minutes = max(0, int((now - published_at).total_seconds() / 60))
-    if age_minutes > filters["max_age_minutes"]:
-        return None, Rejection("свежесть", f"объявлению {age_minutes} мин, лимит {filters['max_age_minutes']}")
+    # 1. Свежесть — самый дешёвый и самый важный отсев. В каналах пост тонет за час,
+    #    а на бирже заказ висит днями, поэтому окно задаётся отдельно по источнику.
+    #    Если биржа не публикует время, возраст неизвестен: отсекать по нему нельзя.
+    #    Признаком новизны там служит сам факт, что заявку видим впервые.
+    age_limit = max_age_minutes or filters["max_age_minutes"]
+    age_minutes = max(0, int((now - published_at).total_seconds() / 60)) if published_at else 0
+    if published_at and age_minutes > age_limit:
+        return None, Rejection("свежесть", f"объявлению {age_minutes} мин, лимит {age_limit}")
 
     # 2. Мошеннические схемы.
     scam = _hits(body, cfg["scam_markers"])
@@ -623,10 +628,17 @@ def assess(
             return None, Rejection("цена", f"{offer} ₽ ниже минимума {filters['minimum_offer_rub']} ₽")
         if hourly < filters["minimum_hourly_rub"]:
             return None, Rejection("ставка", f"{hourly} ₽/час ниже минимума {filters['minimum_hourly_rub']}")
+        # Неправдоподобно высокая ставка за короткую работу — это разобранная
+        # зарплата или цена-заглушка, а не бюджет задачи.
+        if hourly > filters["minimum_hourly_rub"] * 15:
+            return None, Rejection(
+                "сумма неправдоподобна",
+                f"{offer} ₽ за {skill_match.minutes} мин — похоже на зарплату или ошибку разбора",
+            )
 
     # 8. Баллы.
     urgency, urgency_word = urgency_level(body)
-    freshness = 30 * max(0.0, 1 - age_minutes / filters["max_age_minutes"])
+    freshness = 30 * max(0.0, 1 - age_minutes / age_limit) if published_at else 18
     fit = min(20, 8 + skill_match.hits * 4)
     # Без бюджета судить о деньгах нельзя — ставим нейтральную середину.
     money = min(15, hourly / filters["minimum_hourly_rub"] * 7) if offer else 7

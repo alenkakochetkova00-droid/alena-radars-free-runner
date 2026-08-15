@@ -65,7 +65,10 @@
       "опыт работы от \\d",
       "мы предлагаем",
       "условия работы",
-      "\\bвакансия\\b|\\bвакансии\\b"
+      "\\bвакансия\\b|\\bвакансии\\b",
+      "менеджер\\w* по (?:продаж|работе с клиент)|партнер\\w* по продаж",
+      "специалист\\w* по продаж|торгов\\w+ представител|менеджер\\w* по закупк",
+      "без опыта в найме|обучим с нуля|доход от \\d"
     ],
     "vacancy_weak": [
       "компани\\w*\\s*:",
@@ -524,10 +527,10 @@
     {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
 
-    {"kind": "flru_rss", "name": "FL.ru · заказы «для всех»", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "free", "enabled": true},
-    {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
+    {"kind": "flru_rss", "name": "FL.ru · заказы «для всех»", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "free", "max_age_minutes": 360, "enabled": true},
+    {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "free", "max_age_minutes": 360, "enabled": true},
     {"kind": "telegram_public", "name": "Kwork · тексты и переводы", "channel": "freelance_copywriting", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "telegram_public", "name": "Заказы IT (перекупщик Kwork)", "channel": "it_zakazy", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
-    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "quota", "monthly_quota": 20, "enabled": true}
+    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "quota", "monthly_quota": 20, "max_age_minutes": 360, "enabled": true}
   ]
 }

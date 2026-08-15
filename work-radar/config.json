@@ -26,7 +26,7 @@
     "minimum_hourly_rub": 900,
     "minimum_score": 55,
     "max_alerts_per_cycle": 10,
-    "only_free_response": true
+    "only_free_response": false
   },
 
   "safety_note": [
@@ -133,7 +133,7 @@
     "обзвон|холодн\\w+ звонк|звонить клиентам|телефонн\\w+ продаж",
     "курьер|выезд на|личн\\w+ присутстви|офлайн в городе",
     "нотариальн\\w+ заверени",
-    "модерац\\w+ чата|модератор чата|администратор чата",
+    "модерац\\w+ чат|модератор\\w* .{0,12}чат|администратор\\w* .{0,12}чат",
     "рекламн\\w+ кабинет|настроить таргет|закупк\\w+ рекламы|залив трафика",
     "стрим|прямой эфир|вебинар вести",
     "разработать игру|игров\\w+ движок|платформер|геймдизайн|карт\\w+ города|\\bgta\\b|роблокс|roblox",
@@ -237,6 +237,33 @@
         "Вытащить текст с сохранением структуры",
         "Перевести блоками, сверить термины по глоссарию",
         "Собрать обратно в исходный формат и вычитать"
+      ]
+    },
+    "doc_edit": {
+      "title": "Правки в готовых документах",
+      "match": [
+        "измен\\w+ .{0,25}(?:в документе|в презентац|в пдф|в pdf|в файле|в ворде|в word)",
+        "поправить .{0,20}(?:документ|презентац|пдф|pdf|файл)",
+        "заменить .{0,20}(?:текст|цифр|адрес|наимен|цен|дат|логотип)",
+        "изменить (?:цифр|цен|адрес|дат|назван|реквизит)",
+        "убрать (?:назван|логотип|водяной знак|страниц)",
+        "перевести в (?:word|ворд|excel|формат)|конвертир",
+        "корректировк\\w+ (?:текста|документ)|правк\\w+ в документ",
+        "распознать (?:документ|скан|текст)|набрать текст с"
+      ],
+      "unit_pattern": "документ\\w*|файл\\w*|страниц\\w*|слайд\\w*|правк\\w*",
+      "base_minutes": 20,
+      "per_unit_minutes": 6,
+      "max_minutes": 90,
+      "min_price_rub": 500,
+      "per_unit_price_rub": 250,
+      "unit_forms": ["правку", "правки", "правок"],
+      "offer_line": "Внесу правки аккуратно: шрифты, отступы и вёрстка останутся как в оригинале.",
+      "hook": "Пришлите файл и список правок — верну готовый документ сегодня.",
+      "plan": [
+        "Открыть исходник и зафиксировать список правок по пунктам",
+        "Внести изменения, сохранив шрифты и вёрстку",
+        "Сверить с оригиналом и отдать в нужном формате"
       ]
     },
     "docs_business": {
@@ -444,6 +471,8 @@
 
   "sources": [
     {"kind": "telegram_public", "name": "Фриланс Таверна", "channel": "freelancetaverna", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Фриланс · вакансии · удалёнка", "channel": "freelancce", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
+    {"kind": "telegram_public", "name": "Work On", "channel": "workk_on", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "GetClient", "channel": "GetClient", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Freelance Choice", "channel": "freelancechoice", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Заказы на дизайн", "channel": "zakaz_design", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
@@ -451,10 +480,10 @@
     {"kind": "telegram_public", "name": "Ищу дизайнера", "channel": "design_freevacancies", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
     {"kind": "telegram_public", "name": "Вакансии для дизайнеров", "channel": "designwork_vacansii", "contact_mode": "direct", "posting_type": "mixed", "response_cost": "free", "enabled": true},
 
-    {"kind": "flru_rss", "name": "FL.ru", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
+    {"kind": "flru_rss", "name": "FL.ru · заказы «для всех»", "url": "https://www.fl.ru/rss/all.xml", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "free", "enabled": true},
     {"kind": "freelancejob", "name": "FreelanceJob", "url": "https://www.freelancejob.ru/projects/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "telegram_public", "name": "Kwork · тексты и переводы", "channel": "freelance_copywriting", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
     {"kind": "telegram_public", "name": "Заказы IT (перекупщик Kwork)", "channel": "it_zakazy", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false},
-    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "paid", "enabled": false}
+    {"kind": "weblancer", "name": "Weblancer", "url": "https://www.weblancer.net/jobs/", "contact_mode": "platform", "posting_type": "tasks", "response_cost": "quota", "monthly_quota": 20, "enabled": true}
   ]
 }

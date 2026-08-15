@@ -387,7 +387,8 @@ class Assessment:
     duration: str
     quantity: int
     minutes: int
-    offer_rub: int
+    offer_rub: int | None
+    floor_rub: int
     budget_rub: int | None
     hourly_rub: int
     age_minutes: int
@@ -511,7 +512,7 @@ def human_duration(minutes: int, margin: float = 1.6) -> str:
     return f"около {hours} {plural(hours, ['часа', 'часов', 'часов'])}"
 
 
-def build_reply(subject: str, skill: dict[str, Any], quantity: int, offer: int,
+def build_reply(subject: str, skill: dict[str, Any], quantity: int, offer: int | None,
                 minutes: int, cfg: dict[str, Any]) -> str:
     """Короткий отклик, который доказывает, что объявление прочитано.
 
@@ -529,10 +530,15 @@ def build_reply(subject: str, skill: dict[str, Any], quantity: int, offer: int,
             action = re.sub(r"\{n\}\s*", "", action).replace("{unit}", forms[0])
         else:
             action = re.sub(r"\{n\}\s*\{unit\}\s*|\{n\}\s*", "", action)
+    # Без названного бюджета цену не выдумываем, а спрашиваем: назвать 1 000 ₽
+    # там, где заказчик рассчитывал на 150, — верный способ получить отказ.
+    price_line = (f"Срок — {due_phrase(minutes)}, стоимость — {money(offer)} ₽." if offer
+                  else f"Срок — {due_phrase(minutes)}. Сориентируйте по бюджету, "
+                       f"и я сразу назову точную цену.")
     lines = [
         f"Здравствуйте! По задаче «{subject}» — готова взять сейчас.",
         action,
-        f"Срок — {due_phrase(minutes)}, стоимость — {money(offer)} ₽.",
+        price_line,
         skill["hook"],
     ]
     reply = "\n".join(line for line in lines if line)
@@ -554,6 +560,7 @@ def assess(
     cfg: dict[str, Any],
     category: str = "",
     posting_type: str = "mixed",
+    response_cost: str = "free",
 ) -> tuple[Assessment | None, Rejection | None]:
     """Главная функция: пропускать объявление или нет и на каких условиях."""
     filters = cfg["filters"]
@@ -595,29 +602,34 @@ def assess(
 
     # 7. Деньги.
     budget = extract_budget(body, cfg["pricing"]["usd_rate_rub"])
-    needs_budget = filters["require_budget"] or (
-        posting_type != "tasks" and filters.get("require_budget_outside_task_boards", False)
-    )
-    if budget.amount is None and needs_budget:
-        # В каналах без суммы почти всегда ищут человека «в проект», а не разовую работу.
-        return None, Rejection("бюджет", "сумма не указана, а источник смешанный")
-    offer, budget_note = make_offer(budget, skill, skill_match.quantity, cfg)
-    if budget.amount and offer > budget.amount:
-        return None, Rejection(
-            "бюджет ниже планки",
-            f"заказчик готов на {budget.amount} ₽, нижняя цена за такую работу — {offer} ₽",
-        )
-    hourly = int(offer / max(skill_match.minutes / 60, 0.25))
-    if offer < filters["minimum_offer_rub"]:
-        return None, Rejection("цена", f"{offer} ₽ ниже минимума {filters['minimum_offer_rub']} ₽")
-    if hourly < filters["minimum_hourly_rub"]:
-        return None, Rejection("ставка", f"{hourly} ₽/час ниже минимума {filters['minimum_hourly_rub']}")
+    floor, budget_note = make_offer(budget, skill, skill_match.quantity, cfg)
+    # Сумму спрашивают, а не угадывают, — если есть чем спросить: прямой контакт
+    # либо бесплатный отклик на площадке. Требовать бюджет имеет смысл только там,
+    # где обращение стоит денег и промах по цене обходится дорого.
+    can_ask = (contact_mode == "direct" and bool(contacts)) or response_cost == "free"
+    if budget.amount is None and filters["require_budget"] and not can_ask:
+        return None, Rejection("бюджет", "сумма не указана, а спросить негде")
+
+    offer: int | None = floor if budget.amount else None
+    hourly = 0
+    if offer is not None:
+        if budget.amount and offer > budget.amount:
+            return None, Rejection(
+                "бюджет ниже планки",
+                f"заказчик готов на {budget.amount} ₽, нижняя цена за такую работу — {offer} ₽",
+            )
+        hourly = int(offer / max(skill_match.minutes / 60, 0.25))
+        if offer < filters["minimum_offer_rub"]:
+            return None, Rejection("цена", f"{offer} ₽ ниже минимума {filters['minimum_offer_rub']} ₽")
+        if hourly < filters["minimum_hourly_rub"]:
+            return None, Rejection("ставка", f"{hourly} ₽/час ниже минимума {filters['minimum_hourly_rub']}")
 
     # 8. Баллы.
     urgency, urgency_word = urgency_level(body)
     freshness = 30 * max(0.0, 1 - age_minutes / filters["max_age_minutes"])
     fit = min(20, 8 + skill_match.hits * 4)
-    money = min(15, hourly / filters["minimum_hourly_rub"] * 7)
+    # Без бюджета судить о деньгах нельзя — ставим нейтральную середину.
+    money = min(15, hourly / filters["minimum_hourly_rub"] * 7) if offer else 7
     contact_points = 15 if (contacts and contact_mode == "direct") else 6
     competition = 8 if responses is None else max(0, 8 - responses)
     # Много простых задач выгоднее двух долгих: короткая работа получает надбавку.
@@ -644,7 +656,7 @@ def assess(
 
     red_flags: list[str] = []
     if not budget.amount:
-        red_flags.append("бюджет не указан — цена ориентировочная, уточните объём до старта")
+        red_flags.append(f"бюджет не указан — спросите цену, ваша нижняя планка {floor} ₽")
     if hourly > filters["minimum_hourly_rub"] * 6:
         red_flags.append("ставка выглядит слишком хорошей — вероятно, объём работ больше, чем в тексте")
     if budget.is_salary:
@@ -667,6 +679,7 @@ def assess(
         quantity=skill_match.quantity,
         minutes=skill_match.minutes,
         offer_rub=offer,
+        floor_rub=floor,
         budget_rub=budget.amount,
         hourly_rub=hourly,
         age_minutes=age_minutes,

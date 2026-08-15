@@ -347,8 +347,14 @@ def parse_telegram_source(source: dict[str, Any], cfg: dict[str, Any]) -> list[L
 
 
 def parse_flru_rss(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]:
-    """FL.ru отдаёт открытую ленту заказов с точным временем и бюджетом в заголовке."""
+    """FL.ru отдаёт открытую ленту заказов с точным временем и бюджетом в заголовке.
+
+    Метка «для всех» в заголовке означает, что откликнуться можно бесплатно;
+    на остальные заказы биржа требует купить пакет откликов. Когда включён режим
+    только бесплатных откликов, платные позиции сюда не попадают.
+    """
     page = fetch_url(source["url"], timeout=25)
+    free_only = cfg["filters"].get("only_free_response", False)
     listings: list[Listing] = []
     for chunk in re.findall(r"<item>(.*?)</item>", page, flags=re.S):
         def tag(name: str) -> str:
@@ -359,6 +365,11 @@ def parse_flru_rss(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]
         title = tag("title")
         if not link or not title:
             continue
+        open_to_all = "для всех" in title.lower()
+        if free_only and not open_to_all:
+            continue
+        title = re.sub(r"[,\s]*для всех\s*", "", title).replace("()", "").strip(" ,()")
+        response_cost = "free" if open_to_all else "paid"
         try:
             published = email.utils.parsedate_to_datetime(tag("pubDate")).astimezone(MOSCOW)
         except (TypeError, ValueError):
@@ -373,7 +384,7 @@ def parse_flru_rss(source: dict[str, Any], cfg: dict[str, Any]) -> list[Listing]
                 published_at=published,
                 contact_mode=source.get("contact_mode", "platform"),
                 posting_type=source.get("posting_type", "mixed"),
-                response_cost=source.get("response_cost", "free"),
+                response_cost=response_cost,
                 category=tag("category"),
             )
         )
@@ -593,7 +604,10 @@ def format_alert(listing: Listing, assessment: matching.Assessment,
               "Правила: /safety</i>") if (cfg or {}).get("safety_note") else ""
     money = lambda value: f"{value:,}".replace(",", " ")
     budget = f"{money(assessment.budget_rub)} ₽" if assessment.budget_rub else "не указан"
-    if assessment.contact_mode == "direct" and listing.contacts:
+    if listing.response_cost == "paid" and not listing.contacts:
+        contact_line = ('💳 <b>Отклик платный</b> — площадка берёт деньги за ответ.\n'
+                        'Бесплатно можно взять заказы с пометкой «для всех».')
+    elif assessment.contact_mode == "direct" and listing.contacts:
         # Ссылка открывает выбор чата с уже набранным письмом — остаётся нажать «отправить».
         prefilled = urllib.parse.quote(assessment.reply)
         handles = " · ".join(
@@ -607,19 +621,21 @@ def format_alert(listing: Listing, assessment: matching.Assessment,
     elif quota_left is not None:
         contact_line = (f"Отклик через площадку · осталось бесплатных в этом месяце: "
                         f"<b>{quota_left}</b>")
-    elif listing.response_cost == "paid":
-        contact_line = "⚠️ Отклик через площадку — <b>платный</b>"
     else:
-        contact_line = "Отклик через площадку — ссылка внизу"
+        contact_line = "✅ Отклик через площадку <b>бесплатный</b> — заказ открыт для всех"
     details = "\n".join(f"• {safe(point)}" for point in assessment.details) or "• Подробностей в объявлении нет."
-    price = f"Заказчик указал: <b>{budget}</b>"
+    if assessment.offer_rub:
+        price = f"Заказчик указал: <b>{budget}</b> (предложить: <b>{money(assessment.offer_rub)} ₽</b>)"
+    else:
+        price = (f"Заказчик сумму <b>не указал</b> — цену спрашиваем в письме "
+                 f"(ваша нижняя планка: {money(assessment.floor_rub)} ₽)")
     flags = ""
     if assessment.red_flags:
         flags = "\n⚠️ " + safe(assessment.red_flags[0]) + "\n"
     return (
         f"📌 <b>Задача</b>\n{safe(assessment.short_line)}\n\n"
         f"📄 <b>Подробнее</b>\n{details}\n\n"
-        f"💰 <b>Стоимость</b>\n{price} (предложить: <b>{money(assessment.offer_rub)} ₽</b>)\n\n"
+        f"💰 <b>Стоимость</b>\n{price}\n\n"
         f"✍️ <b>Куда писать</b>\n{contact_line}\n\n"
         f"📨 <b>Текст письма</b>\n<pre>{safe(assessment.reply)}</pre>\n\n"
         f"⏱ <b>Времени на работу</b>\n{safe(assessment.duration)} с запасом\n\n"
@@ -665,6 +681,7 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
             cfg=cfg,
             category=listing.category,
             posting_type=listing.posting_type,
+            response_cost=listing.response_cost,
         )
         if rejection is not None:
             result.funnel[rejection.stage] += 1
@@ -674,7 +691,10 @@ def scan(cfg: dict[str, Any], store: Store | None, now: datetime | None = None,
             continue
         seen_subjects.add(listing.dedup_key)
         result.matches.append((listing, assessment))
-    result.matches.sort(key=lambda pair: pair[1].score, reverse=True)
+    # Бесплатные отклики — всегда выше платных, даже если балл у платного больше.
+    result.matches.sort(
+        key=lambda pair: (pair[0].response_cost != "paid", pair[1].score), reverse=True
+    )
     return result
 
 

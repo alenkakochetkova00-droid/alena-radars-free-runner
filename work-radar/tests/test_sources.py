@@ -61,14 +61,59 @@ class FreeSourceTests(unittest.TestCase):
                     f"{source.get('name')}: платный отклик, источник должен быть выключен",
                 )
 
-    def test_free_sources_are_direct_contact(self):
-        """Бесплатный отклик возможен только там, где есть контакт заказчика."""
+    def test_free_telegram_sources_are_direct_contact(self):
+        """В каналах бесплатный отклик возможен только при контакте заказчика.
+
+        На биржах бывает иначе: FL.ru не берёт денег за отклик на заказы
+        с меткой «для всех», поэтому там платформа остаётся бесплатной.
+        """
         for source in self.cfg["sources"]:
-            if source.get("response_cost") == "free":
+            if source.get("response_cost") == "free" and source["kind"] == "telegram_public":
                 self.assertEqual(
                     source.get("contact_mode"), "direct",
                     f"{source.get('name')}: бесплатный отклик без прямого контакта невозможен",
                 )
+
+
+class FlruOpenToAllTests(unittest.TestCase):
+    """На FL.ru бесплатны только заказы с меткой «для всех»."""
+
+    def setUp(self):
+        self.cfg = R.load_config(ROOT / "config.json")
+        self.feed = (
+            "<rss><channel>"
+            "<item><title><![CDATA[Настроить цели в Аналитике (Бюджет: 2 000 руб., для всех)]]></title>"
+            "<link>https://www.fl.ru/projects/111/a.html</link>"
+            "<description><![CDATA[Нужно настроить цели]]></description>"
+            "<pubDate>Fri, 14 Aug 2026 12:00:00 GMT</pubDate></item>"
+            "<item><title><![CDATA[Закрытый заказ (Бюджет: 9 000 руб.)]]></title>"
+            "<link>https://www.fl.ru/projects/222/b.html</link>"
+            "<description><![CDATA[Нужно что-то сделать]]></description>"
+            "<pubDate>Fri, 14 Aug 2026 12:00:00 GMT</pubDate></item>"
+            "</channel></rss>"
+        )
+
+    def parse(self, free_only):
+        self.cfg["filters"]["only_free_response"] = free_only
+        original = R.fetch_url
+        R.fetch_url = lambda *a, **k: self.feed
+        try:
+            return R.parse_flru_rss({"url": "x", "contact_mode": "platform"}, self.cfg)
+        finally:
+            R.fetch_url = original
+
+    def test_paid_orders_are_dropped(self):
+        listings = self.parse(free_only=True)
+        self.assertEqual(len(listings), 1)
+        self.assertIn("Настроить цели", listings[0].title)
+
+    def test_label_is_stripped_from_the_title(self):
+        listings = self.parse(free_only=True)
+        self.assertNotIn("для всех", listings[0].title.lower())
+        self.assertIn("2 000", listings[0].title)
+
+    def test_everything_is_kept_when_paid_allowed(self):
+        self.assertEqual(len(self.parse(free_only=False)), 2)
 
     def test_quota_sources_declare_a_limit(self):
         for source in self.cfg["sources"]:

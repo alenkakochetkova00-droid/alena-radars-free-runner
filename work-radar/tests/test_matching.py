@@ -151,15 +151,38 @@ class SmallTaskTests(unittest.TestCase):
         self.assertEqual(self.cfg["filters"]["minimum_offer_rub"], 500)
 
     def test_no_price_is_invented_without_a_budget(self):
-        """Заказ «бюджет по договорённости» — не повод называть сумму наугад.
+        """«Бюджет по договорённости» — цену спрашиваем, а не выдумываем.
 
         Именно так радар предложил 1 000 ₽ там, где рынок ставил 150 ₽.
+        Заявку не теряем: писать заказчику бесплатно, значит цену можно уточнить.
         """
         assessment, rejection = self.build(
-            "Нужно изменить презентацию в пдф: убрать название, изменить цены. Бюджет по договоренности."
+            "Срочно нужно изменить презентацию в пдф: убрать название, изменить цены."
+        )
+        self.assertIsNone(rejection, rejection.reason if rejection else "")
+        self.assertIsNone(assessment.offer_rub)
+        self.assertIn("сориентируйте по бюджету", assessment.reply.lower())
+        self.assertNotIn("₽", assessment.reply)
+
+    def test_missing_budget_is_dropped_when_asking_costs_money(self):
+        """Платный отклик без названной суммы — риск потратить деньги впустую."""
+        assessment, rejection = matching.assess(
+            title="Изменить презентацию", text="Нужно изменить презентацию в пдф. Убрать название.",
+            published_at=self.now, now=self.now, contacts=[], contact_mode="platform",
+            responses=0, cfg=self.cfg, posting_type="tasks", response_cost="paid",
         )
         self.assertIsNone(assessment)
         self.assertEqual(rejection.stage, "бюджет")
+
+    def test_missing_budget_is_kept_when_the_response_is_free(self):
+        """Заказ «для всех»: отклик ничего не стоит, значит цену можно спросить."""
+        assessment, rejection = matching.assess(
+            title="Изменить презентацию", text="Срочно нужно изменить презентацию в пдф. Убрать название.",
+            published_at=self.now, now=self.now, contacts=[], contact_mode="platform",
+            responses=0, cfg=self.cfg, posting_type="tasks", response_cost="free",
+        )
+        self.assertIsNone(rejection, rejection.reason if rejection else "")
+        self.assertIsNone(assessment.offer_rub)
 
     def test_offer_never_exceeds_what_the_customer_named(self):
         assessment, _ = self.build("Срочно нужно поправить текст на сайте. Бюджет 800 руб.")

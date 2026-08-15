@@ -476,7 +476,9 @@ def collect(cfg: dict[str, Any]) -> list[Listing]:
     for source in cfg["sources"]:
         if not source.get("enabled", True):
             continue
-        if free_only and source.get("response_cost", "free") != "free":
+        # «quota» — это тоже бесплатно, просто с лимитом: Weblancer выдаёт
+        # стартовый запас заявок, и тратить деньги на них не нужно.
+        if free_only and source.get("response_cost", "free") not in {"free", "quota"}:
             LOG.info("%s: пропущен — отклик платный", source.get("name", source["kind"]))
             continue
         parser = PARSERS.get(source["kind"])
